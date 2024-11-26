@@ -1,0 +1,47 @@
+* {
+    padding: 0;
+    margin: 0;
+}
+
+.glass-effect {
+    background: rgba( 255, 255, 255, 0.15 );
+box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+backdrop-filter: blur( 4.5px );
+-webkit-backdrop-filter: blur( 4.5px );
+border-radius: 10px;
+}
+.swiper-wrapper {
+    height: fit-content !important;
+    width: 100% !important;
+}
+.swiper-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    gap: 16px;
+    position: relative;
+}
+.swiper-pagination-bullet {
+    width: 42px;
+    height: 42px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 26px;
+    font-size: 16px;
+    color: #6B7280;
+    opacity: 1;
+    background: #F9FAFB;
+    border: 1px solid #E5E7EB;
+}
+.swiper-pagination-bullet-active {
+    color: #fff;
+    background: #6f605b; /* Brown color from the palette */
+}
+.swiper-horizontal > .swiper-pagination-bullets,
+.swiper-pagination-bullets.swiper-pagination-horizontal,
+.swiper-pagination-custom,
+.swiper-pagination-fraction {
+    bottom: var(--swiper-pagination-bottom, 0px);
+}
