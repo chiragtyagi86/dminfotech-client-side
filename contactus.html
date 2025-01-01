@@ -500,8 +500,8 @@
                         <label for="hs-firstname-contacts-1" class="sr-only">First Name</label>
                         <input
                           type="text"
-                          name="hs-firstname-contacts-1"
-                          id="hs-firstname-contacts-1"
+                          id="fname"
+                          name="fname"
                           class="py-3 border px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
                           placeholder="First Name"
                         />
@@ -511,8 +511,8 @@
                         <label for="hs-lastname-contacts-1" class="sr-only">Last Name</label>
                         <input
                           type="text"
-                          name="hs-lastname-contacts-1"
-                          id="hs-lastname-contacts-1"
+                          name="lname"
+                          id="lname"
                           class="py-3 border px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
                           placeholder="Last Name"
                         />
@@ -524,8 +524,8 @@
                       <label for="hs-email-contacts-1" class="sr-only">Email</label>
                       <input
                         type="email"
-                        name="hs-email-contacts-1"
-                        id="hs-email-contacts-1"
+                        id="email"
+                        name="email"
                         autocomplete="email"
                         class="py-3 border px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
                         placeholder="Email"
@@ -536,8 +536,8 @@
                       <label for="hs-phone-number-1" class="sr-only">Phone Number</label>
                       <input
                         type="text"
-                        name="hs-phone-number-1"
-                        id="hs-phone-number-1"
+                        id="number"
+                        name="number"
                         class="py-3 border px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
                         placeholder="Phone Number"
                       />
@@ -546,8 +546,8 @@
                     <div data-aos="fade-up" data-aos-delay="600">
                       <label for="hs-about-contacts-1" class="sr-only">Details</label>
                       <textarea
-                        id="hs-about-contacts-1"
-                        name="hs-about-contacts-1"
+                      id="details"
+                      name="details"
                         rows="4"
                         class="py-3 border px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
                         placeholder="Details"
@@ -1142,7 +1142,7 @@
           fomObj[key] = value;
         });
         console.log(fomObj);
-        fetch('/', {
+        fetch('https://server.dminfotech.ijebr.com/submit-form', {
           method: 'POST',
           body: JSON.stringify(fomObj)
         })
