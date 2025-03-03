@@ -493,93 +493,298 @@
             </div>
           </section>
    <section class="py-12 px-10">
-    <form id="registration-form">
-        <div class="flex gap-x-6 mb-6">
-          <div class="w-full relative">
-            <label class="flex items-center mb-2 text-gray-600 text-sm font-medium">
-              First Name 
-              <svg width="7" height="7" class="ml-1" viewBox="0 0 7 7" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3.11222 6.04545L3.20668 3.94744L1.43679 5.08594L0.894886 4.14134L2.77415 3.18182L0.894886 2.2223L1.43679 1.2777L3.20668 2.41619L3.11222 0.318182H4.19105L4.09659 2.41619L5.86648 1.2777L6.40838 2.2223L4.52912 3.18182L6.40838 4.14134L5.86648 5.08594L4.09659 3.94744L4.19105 6.04545H3.11222Z" fill="#EF4444"/>
-              </svg>
-            </label>
-            <input id="first_name" name="first_name" type="text" class="block w-full h-11 px-5 py-2.5 bg-white leading-7 text-base font-normal shadow-xs text-gray-900 bg-transparent border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none" placeholder="" required>
-          </div>
-          <div class="w-full relative">
-            <label class="flex items-center mb-2 text-gray-600 text-sm font-medium">
-              Last Name 
-              <svg width="7" height="7" class="ml-1" viewBox="0 0 7 7" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3.11222 6.04545L3.20668 3.94744L1.43679 5.08594L0.894886 4.14134L2.77415 3.18182L0.894886 2.2223L1.43679 1.2777L3.20668 2.41619L3.11222 0.318182H4.19105L4.09659 2.41619L5.86648 1.2777L6.40838 2.2223L4.52912 3.18182L6.40838 4.14134L5.86648 5.08594L4.09659 3.94744L4.19105 6.04545H3.11222Z" fill="#EF4444"/>
-              </svg>
-            </label>
-            <input id="last_name" name="last_name" type="text" class="block w-full h-11 px-5 py-2.5 bg-white leading-7 text-base font-normal shadow-xs text-gray-900 bg-transparent border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none" placeholder="" required>
-          </div>
+    <!-- Card Section -->
+<div class="max-w-4xl  mx-auto">
+  <!-- Card -->
+  <div class="bg-white ">
+    <form id="registration-form"  method="POST" enctype="multipart/form-data">
+      <!-- Section -->
+      <div class="grid sm:grid-cols-12 gap-2 sm:gap-4 py-8 first:pt-0 last:pb-0 border-t first:border-transparent border-gray-200">
+        <div class="sm:col-span-12">
+          <h2 class="text-lg font-semibold text-gray-800">
+            Submit your application
+          </h2>
         </div>
-        <div class="relative mb-6">
-          <label class="flex items-center mb-2 text-gray-600 text-sm font-medium">
-            Email Address 
-            <svg width="7" height="7" class="ml-1" viewBox="0 0 7 7" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M3.11222 6.04545L3.20668 3.94744L1.43679 5.08594L0.894886 4.14134L2.77415 3.18182L0.894886 2.2223L1.43679 1.2777L3.20668 2.41619L3.11222 0.318182H4.19105L4.09659 2.41619L5.86648 1.2777L6.40838 2.2223L4.52912 3.18182L6.40838 4.14134L5.86648 5.08594L4.09659 3.94744L4.19105 6.04545H3.11222Z" fill="#EF4444"/>
-            </svg>
+        <!-- End Col -->
+
+        <div class="sm:col-span-3">
+          <label for="af-submit-application-full-name" class="inline-block text-sm font-medium text-gray-500 mt-2.5">
+            Full name
           </label>
-          <input id="email" name="email" type="email" class="block w-full h-11 px-5 py-2.5 bg-white leading-7 text-base font-normal shadow-xs text-gray-900 bg-transparent border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none" placeholder="" required>
         </div>
-        <div class="relative mb-6">
-          <label class="flex items-center mb-2 text-gray-600 text-sm font-medium">
-            Phone Number 
-            <svg width="7" height="7" class="ml-1" viewBox="0 0 7 7" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M3.11222 6.04545L3.20668 3.94744L1.43679 5.08594L0.894886 4.14134L2.77415 3.18182L0.894886 2.2223L1.43679 1.2777L3.20668 2.41619L3.11222 0.318182H4.19105L4.09659 2.41619L5.86648 1.2777L6.40838 2.2223L4.52912 3.18182L6.40838 4.14134L5.86648 5.08594L4.09659 3.94744L4.19105 6.04545H3.11222Z" fill="#EF4444"/>
-            </svg>
+        <!-- End Col -->
+
+        <div class="sm:col-span-9">
+          <div class="sm:flex">
+            <input required id="full-name" name="full-name" type="text" class="py-2 border px-3 pe-11 block w-full border-gray-200 shadow-sm -mt-px -ms-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-s-lg sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e-lg text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
+            <!-- <input required type="text" class="py-2 px-3 pe-11 border  block w-full border-gray-200 shadow-sm -mt-px -ms-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-s-lg sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e-lg text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"> -->
+          </div>
+        </div>
+        <!-- End Col -->
+
+        <div class="sm:col-span-3">
+          <label for="af-submit-application-email" class="inline-block text-sm font-medium text-gray-500 mt-2.5">
+            Email
           </label>
-          <input id="number" name="number" type="tel" class="block w-full h-11 px-5 py-2.5 bg-white leading-7 text-base font-normal shadow-xs text-gray-900 bg-transparent border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none" placeholder="" required>
         </div>
-        <div class="relative mb-6">
-            <label class="flex items-center mb-2 text-gray-600 text-sm font-medium">
-              Select Courses
-              <svg width="7" height="7" class="ml-1" viewBox="0 0 7 7" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3.11222 6.04545L3.20668 3.94744L1.43679 5.08594L0.894886 4.14134L2.77415 3.18182L0.894886 2.2223L1.43679 1.2777L3.20668 2.41619L3.11222 0.318182H4.19105L4.09659 2.41619L5.86648 1.2777L6.40838 2.2223L4.52912 3.18182L6.40838 4.14134L5.86648 5.08594L4.09659 3.94744L4.19105 6.04545H3.11222Z" fill="#EF4444"/>
-              </svg>
+        <!-- End Col -->
+
+        <div class="sm:col-span-9">
+          <input required  type="email" id="email" name="email" class="py-2 border  px-3 pe-11 block w-full border-gray-200 shadow-sm text-sm rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
+        </div>
+        <!-- End Col -->
+
+        <div class="sm:col-span-3">
+          <div class="inline-block">
+            <label for="af-submit-application-phone"  class="inline-block text-sm font-medium text-gray-500 mt-2.5">
+              Phone
             </label>
-            <select required name="courses" id="courses"  class="block w-full h-11 px-5 py-2.5 bg-white leading-7 text-base font-normal shadow-xs text-gray-900 bg-transparent border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none" >
-                <option value="">Please Select</option>
-                <option value="Basic Stock Market Training">Basic Stock Market Training</option>
-                <option value="Intermediate Stock Market Training">Intermediate Stock Market Training</option>
-                <option value="Advanced Stock Market Training">Advanced Stock Market Training</option>
-                <option value="Option Trading Training">Option Trading Training</option>
-                <option value="Fundamental Analysis">Fundamental Analysis</option>
-                <option value="Technical Analysis">Technical Analysis</option>
-                <option value="Corporate Readiness Programme
-                ">Corporate Readiness Programme
-            </option>
-            </select>
-          </div>
-        <div class="flex gap-x-6 mb-6">
-          <div class="w-full relative">
-            <label class="flex items-center mb-2 text-gray-600 text-sm font-medium">
-              Ocupation
-              <svg width="7" height="7" class="ml-1" viewBox="0 0 7 7" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3.11222 6.04545L3.20668 3.94744L1.43679 5.08594L0.894886 4.14134L2.77415 3.18182L0.894886 2.2223L1.43679 1.2777L3.20668 2.41619L3.11222 0.318182H4.19105L4.09659 2.41619L5.86648 1.2777L6.40838 2.2223L4.52912 3.18182L6.40838 4.14134L5.86648 5.08594L4.09659 3.94744L4.19105 6.04545H3.11222Z" fill="#EF4444"/>
-              </svg>
-            </label>
-            <input name="occupation" id="occupation" type="text" class="block w-full h-11 px-5 py-2.5 bg-white leading-7 text-base font-normal shadow-xs text-gray-900 bg-transparent border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none" placeholder="" required>
-          </div>
-          <div class="w-full relative">
-            <label class="flex items-center mb-2 text-gray-600 text-sm font-medium">
-              Organization
-              <svg width="7" height="7" class="ml-1" viewBox="0 0 7 7" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3.11222 6.04545L3.20668 3.94744L1.43679 5.08594L0.894886 4.14134L2.77415 3.18182L0.894886 2.2223L1.43679 1.2777L3.20668 2.41619L3.11222 0.318182H4.19105L4.09659 2.41619L5.86648 1.2777L6.40838 2.2223L4.52912 3.18182L6.40838 4.14134L5.86648 5.08594L4.09659 3.94744L4.19105 6.04545H3.11222Z" fill="#EF4444"/>
-              </svg>
-            </label>
-            <input type="text" id="organization" name="organization" class="block w-full h-11 px-5 py-2.5 bg-white leading-7 text-base font-normal shadow-xs text-gray-900 bg-transparent border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none" placeholder="" required>
           </div>
         </div>
-        <div class="relative mb-6 flex items-start">
-            <input type="checkbox" id="terms" class="mr-2 w-4 h-4 text-[#6F605B] rounded border-gray-300 focus:ring-[#6F605B]" required>
-            <label for="terms" class="text-gray-600 text-sm">
-              I agree to the <a href="/policy/t&c.html" class="text-blue-600 underline">terms and conditions</a>.
+        <!-- End Col -->
+
+        <div class="sm:col-span-9">
+          <input required id="phone" name="phone" type="text" class="py-2 border  px-3 pe-11 block w-full border-gray-200 shadow-sm rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
+
+          <p class="mt-3">
+            <!-- <a class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline focus:outline-none focus:underline font-medium" href="../docs/index.html">
+              <svg class="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+              Add phone
+            </a> -->
+          </p>
+        </div>
+        <!-- End Col -->
+        <div class="sm:col-span-3">
+          <label for="af-submit-application-email" class="inline-block text-sm font-medium text-gray-500 mt-2.5">
+            Date of Birth
+          </label>
+        </div>
+        <!-- End Col -->
+
+        <div class="sm:col-span-9">
+          <input required  type="date" id="dob" name="dob" class="py-2 border  px-3 pe-11 block w-full border-gray-200 shadow-sm text-sm rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
+        </div>
+
+        <div class="sm:col-span-3">
+          <div class="inline-block">
+            <label for="af-submit-application-current-company" class="inline-block  text-sm font-medium text-gray-500 mt-2.5">
+              Current Company/Organization
             </label>
           </div>
-        <button type="submit" class="w-52 h-12 shadow-sm rounded-md bg-[#6F605B] transition-all duration-700 text-white text-base font-semibold leading-7">Register</button>
-      </form>
+        </div>
+        <!-- End Col -->
+
+        <div class="sm:col-span-9">
+          <input required id="af-submit-application-current-company" name="organization" itemid="organization" type="text" class="py-2 border px-3 pe-11 block w-full border-gray-200 shadow-sm rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
+        </div>
+        <!-- End Col -->
+      </div>
+      <!-- End Section -->
+
+      <!-- Section -->
+      <div class="grid sm:grid-cols-12 gap-2 sm:gap-4 py-8 first:pt-0 last:pb-0 border-t first:border-transparent border-gray-200">
+        <div class="sm:col-span-12">
+          <h2 class="text-lg font-semibold text-gray-800">
+            Profile
+          </h2>
+        </div>
+        <!-- End Col -->
+
+        <div class="sm:col-span-3">
+          <label for="af-submit-application-resume-cv" class="inline-block text-sm font-medium text-gray-500 mt-2.5">
+            Resume/CV
+          </label></label><span class="text-xs text-red-500">(PDF only)*</span>
+        </div>
+        <!-- End Col -->
+
+        <div class="sm:col-span-9">
+          <label for="resume-cv" class="sr-only">Choose file</label>
+          <input required type="file" name="resume-cv" id="resume-cv" class="block w-full border border-gray-200 shadow-sm rounded-lg text-sm focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none
+            file:bg-gray-50 file:border-0
+            file:bg-gray-100 file:me-4
+            file:py-2 file:px-4
+           ">
+        </div>
+        <!-- End Col -->
+
+        <div class="sm:col-span-3">
+          <div class="inline-block">
+            <label for="af-submit-application-bio" class="inline-block text-sm font-medium text-gray-500 mt-2.5">
+              Personal summary
+            </label>
+          </div>
+        </div>
+        <!-- End Col -->
+         
+
+        <div class="sm:col-span-9">
+          <textarea id="profile-summary" name="profile-summary" class="py-2 px-3 block border w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none" rows="6" placeholder="Add a cover letter or anything else you want to share."></textarea>
+        </div>
+        <!-- End Col -->
+        <div class="sm:col-span-3">
+          <label for="af-submit-application-email" class="inline-block text-sm font-medium text-gray-500 mt-2.5">
+            Experience Level
+          </label>
+        </div>
+        <!-- End Col -->
+
+        <div class="sm:col-span-9">
+          <select   id="exp" name="exp" class="py-2 border  px-3 pe-11 block w-full border-gray-200 shadow-sm text-sm rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
+          <option value="Beginner">Beginner</option>
+          <option value="Intermediate">Intermediate</option>  
+          <option value="Advanced">Advanced</option>
+          </select>
+        </div>
+      </div>
+      
+      <!-- End Section -->
+
+      <!-- Section -->
+      <div class="grid sm:grid-cols-12 gap-2 sm:gap-4 py-8 first:pt-0 last:pb-0 border-t first:border-transparent border-gray-200">
+        <div class="sm:col-span-12">
+          <h2 class="text-lg font-semibold text-gray-800">
+            Links
+          </h2>
+        </div>
+        <!-- End Col -->
+
+        <div class="sm:col-span-3">
+          <label for="af-submit-application-linkedin-url" class="inline-block text-sm font-medium text-gray-500 mt-2.5">
+            LinkedIn URL
+          </label>
+        </div>
+        <!-- End Col -->
+
+        <div class="sm:col-span-9">
+          <input required id="linkedin-link" name="linkedin-link" type="text" class="py-2 px-3 pe-11 block border w-full border-gray-200 shadow-sm text-sm rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
+        </div>
+        <!-- End Col -->
+
+        <div class="sm:col-span-3">
+          <label for="af-submit-application-twitter-url" class="inline-block text-sm font-medium text-gray-500 mt-2.5">
+            Twitter URL
+          </label>
+        </div>
+        <!-- End Col -->
+
+        <div class="sm:col-span-9">
+          <input required id="Twitter-link" name="twitter-link" type="text" class="py-2 px-3 pe-11 border block w-full border-gray-200 shadow-sm text-sm rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
+        </div>
+        <!-- End Col -->
+
+        <!-- <div class="sm:col-span-3">
+          <label for="af-submit-application-github-url" class="inline-block text-sm font-medium text-gray-500 mt-2.5">
+            Github URL
+          </label>
+        </div> -->
+        <!-- End Col -->
+
+        <!-- <div class="sm:col-span-9">
+          <input required id="af-submit-application-github-url" type="text" class="py-2 border px-3 pe-11 block w-full border-gray-200 shadow-sm text-sm rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
+        </div> -->
+        <!-- End Col -->
+
+        <div class="sm:col-span-3">
+          <label for="af-submit-application-portfolio-url" class="inline-block text-sm font-medium text-gray-500 mt-2.5">
+            Portfolio URL
+          </label>
+        </div>
+        <!-- End Col -->
+
+        <div class="sm:col-span-9">
+          <input required id="portfolio-link" name="portfolio-link" type="text" class="py-2 border px-3 pe-11 block w-full border-gray-200 shadow-sm text-sm rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
+        </div>
+        <!-- End Col -->
+
+        <div class="sm:col-span-3">
+          <label for="af-submit-application-other-website" class="inline-block text-sm font-medium text-gray-500 mt-2.5">
+            Other website
+          </label>
+        </div>
+        <!-- End Col -->
+
+        <div class="sm:col-span-9">
+          <input required required id="other-website" name="other-website" type="text" class="py-2  border px-3 pe-11 block w-full border-gray-200 shadow-sm text-sm rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
+        </div>
+        <!-- End Col -->
+
+        <div class="sm:col-start-4 sm:col-span-8">
+          <!-- <a class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline focus:outline-none focus:underline font-medium" href="../docs/index.html">
+            <svg class="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+            Add URL
+          </a> -->
+        </div>
+      </div>
+      <!-- End Section -->
+
+      <!-- Section -->
+      <div class="grid sm:grid-cols-12 gap-2 sm:gap-4 py-8 first:pt-0 last:pb-0 border-t first:border-transparent border-gray-200">
+        <div class="sm:col-span-12">
+          <h2 class="text-lg font-semibold text-gray-800">
+            Before sending your application, please let us know...
+          </h2>
+        </div>
+        <!-- End Col -->
+
+        <div class="sm:col-span-3">
+          <label for="af-submit-application-desired-salary" class="inline-block text-sm font-medium text-gray-500 mt-2.5">
+            Transaction ID
+          </label>
+        </div>
+        <!-- End Col -->
+
+        <div class="sm:col-span-9">
+          <input required required id="Transaction-id" name="Transaction-id" type="text" class="py-2 border px-3 pe-11 block w-full border-gray-200 shadow-sm text-sm rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
+        </div>
+        <!-- End Col -->
+
+        <div class="sm:col-span-3">
+          <label for="af-submit-application-available-start-date" class="inline-block text-sm font-medium text-gray-500 mt-2.5">
+            Transaction invoice
+          </label><span class="text-xs text-red-500">(PDF only)*</span>
+        </div>
+        <!-- End Col -->
+
+        <div class="sm:col-span-9">
+          <label for="Transaction-invoice" class="sr-only">Choose file</label>
+          <input required type="file" name="Transaction-invoice" id="Transaction-invoice" class="block w-full border border-gray-200 shadow-sm rounded-lg text-sm focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none
+            file:bg-gray-50 file:border-0
+            file:bg-gray-100 file:me-4
+            file:py-2 file:px-4
+            
+           " accept="pdf" required>
+        </div>
+        <!-- End Col -->
+      </div>
+      <!-- End Section -->
+
+      <!-- Section -->
+      <div class="py-8 first:pt-0 last:pb-0 border-t first:border-transparent border-gray-200">
+        <h2 class="text-lg font-semibold text-gray-800">
+          Submit application
+        </h2>
+        <p class="mt-3 text-sm text-gray-600">
+          In order to contact you with future jobs that you may be interested in, we need to store your personal data.
+        </p>
+        <p class="mt-2 text-sm text-gray-600">
+          If you are happy for us to do so please click the checkbox below.
+        </p>
+
+        <div class="mt-5 flex">
+          <input required type="checkbox" class="shrink-0 mt-0.5 border-gray-300 rounded text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none" id="af-submit-application-privacy-check">
+          <label for="af-submit-application-privacy-check" class="text-sm text-gray-500 ms-2">Allow us to process your personal information.</label>
+        </div>
+      </div>
+      <!-- End Section -->
+
+      <button type="submit" class="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-[#6F605B] text-white  focus:outline-none  disabled:opacity-50 disabled:pointer-events-none">
+        Submit application
+      </button>
+    </form>
+  </div>
+  <!-- End Card -->
+</div>
+<!-- End Card Section -->
       
    </section>
       </main>
@@ -944,7 +1149,10 @@
           </div>
         </div>
       </footer>
+      
+      <script src="./js/mainFuncction.js"></script>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
       <script>
         // Initialize AOS
         AOS.init();
@@ -958,22 +1166,33 @@
           fomObj[key] = value;
         });
         console.log(fomObj);
-        fetch("https://server.dminfotech.ijebr.com/registration-form", {
+        fetch("https://server.dminfotech.ijebr.com/registration", {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(fomObj),
+        body: formData,
       })
         .then(response => response.json())
         .then(data => {
-          console.log('Success:', data);
-          alert("Email has been inserted successfully.");
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-          alert("Oops! Something went wrong. Email was not added.");
+        console.log('Success:', data);
+
+        // ✅ Show Success Message in a Dialog Box
+        Swal.fire({
+            title: "Success!",
+            text: "Your registration was submitted successfully.",
+            icon: "success",
+            confirmButtonText: "OK"
         });
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+
+        // ❌ Show Error Message in a Dialog Box
+        Swal.fire({
+            title: "Error!",
+            text: "Oops! Something went wrong. Try again.",
+            icon: "error",
+            confirmButtonText: "Retry"
+        });
+    });
         })
       </script>
 </body>
