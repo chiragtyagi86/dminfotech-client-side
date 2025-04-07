@@ -7,6 +7,8 @@
     <title>Summer Intership -Dhanmitra Infotech</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="./css/main.css" />
+    <meta name="description" content="Join the Summer Internship Program 2025 at DMIFotech. Get certified, hands-on experience in Web Development, AI, Software Engineering & more. Work on real-world projects with expert mentorship. Apply now!">
+
     <link href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" rel="stylesheet" />
     <meta name="title" content="Dhanamitra Infotech LLP | IT Services, Software Development & Stock Market Training">
     <meta name="description"
@@ -15,6 +17,9 @@
         content="Dhanamitra, Dhanmitra, Dhanamitrah, Dhanmitrah, IT services, software development, stock market training, PhD research, placement services">
     <meta name="robots" content="index, follow">
     <meta name="author" content="Dhanamitra Infotech LLP">
+    <meta name="keywords" content="Summer Internship 2025, DMIFotech Internship, Web Development Internship, AI Internship, Software Engineering Internship, Tech Internships India, Certified Internship, Internship with Real Projects, Summer Training 2025, Best IT Internship, Internship in Ghaziabad, Apply Internship DMIFotech">
+    <meta name="keywords" content="Summer Internship 2025, DMIFotech Internship, Web Development Internship, AI Internship, Software Engineering Internship, Tech Internships India, Certified Internship, Internship with Real Projects, Summer Training 2025, Best IT Internship, Internship in Ghaziabad, Apply Internship DMIFotech, Career Building Internship, Learn to Code Internship, Frontend Development Internship, Backend Development Internship, Full Stack Internship, Cloud Computing Internship, Data Science Internship, IT Internship for Students, Final Year Internship, Skill-Based Training, Internship Certificate Program, Hands-on Tech Training, Campus to Corporate Internship, Internship for B.Tech Students">
+
 
     <link rel="apple-touch-icon" sizes="180x180" href="./assets/favicon_io/apple-touch-icon.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="./assets/favicon_io/favicon-32x32.png" />
@@ -457,7 +462,7 @@
                                 <div class="inline-block">
                                     <label for="af-submit-application-current-company"
                                         class="inline-block  text-sm font-medium text-gray-500 mt-2.5">
-                                        Current Semester/Year
+                                        Current Semester
                                     </label>
                                     <span class="text-xs text-red-500">*</span>
                                 </div>
@@ -750,7 +755,7 @@
                             <div class="sm:col-span-3">
                                 <label for="af-submit-application-desired-salary"
                                     class="inline-block text-sm font-medium text-gray-500 mt-2.5">
-                                    Describe a project you’ve worked on (if any).
+                                    Describe a project you’ve worked on (if not type nill).
                                     <span class="text-xs text-red-500">*</span>
                                 </label>
                             </div>
@@ -1081,44 +1086,63 @@
         // Initialize AOS
         AOS.init();
     </script>
-    <script>
-        document.getElementById("summer-intership-form").addEventListener("submit", function (e) {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const fomObj = {};
-            formData.forEach((value, key) => {
-                fomObj[key] = value;
-            });
-            console.log(fomObj);
-            fetch("https://server.dminfotech.ijebr.com/summer-intern", {
-                method: 'POST',
-                body: formData,
-            })
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Success:', data);
-
-                    // ✅ Show Success Message in a Dialog Box
-                    Swal.fire({
-                        title: "Success!",
-                        text: "Your registration was submitted successfully.",
-                        icon: "success",
-                        confirmButtonText: "OK"
-                    });
-                })
-                .catch((error) => {
-                    console.error('Error:', error);
-
-                    // ❌ Show Error Message in a Dialog Box
-                    Swal.fire({
-                        title: "Error!",
-                        text: "Oops! Something went wrong. Try again.",
-                        icon: "error",
-                        confirmButtonText: "Retry"
-                    });
-                });
+   <script>
+    document.getElementById("summer-intership-form").addEventListener("submit", function (e) {
+        e.preventDefault();
+    
+        const MAX_WORDS = 500;
+        const textareaIDs = [
+            "profile-summary",
+            "why-do-you-summary",
+            "learn-summary",
+            "project-summary"
+        ];
+    
+        textareaIDs.forEach(id => {
+            const textarea = document.getElementById(id);
+            if (textarea) {
+                const words = textarea.value.trim().split(/\s+/).filter(Boolean);
+                if (words.length > MAX_WORDS) {
+                    textarea.value = words.slice(0, MAX_WORDS).join(" ");
+                }
+            }
+        });
+    
+        const formData = new FormData(e.target);
+        const fomObj = {};
+        formData.forEach((value, key) => {
+            fomObj[key] = value;
+        });
+        // console.log(fomObj);
+    
+        fetch("https://server.dminfotech.ijebr.com/summer-intern", {
+            method: 'POST',
+            body: formData,
         })
+        .then(response => response.json())
+        .then(data => {
+            // console.log('Success:', data);
+            Swal.fire({
+                title: "Success!",
+                text: "Your registration was submitted successfully.",
+                icon: "success",
+                confirmButtonText: "OK"
+            });
+        })
+        .catch((error) => {
+            // console.error('Error:', error);
+            Swal.fire({
+                title: "Error!",
+                text: "Oops! Something went wrong. Try again.",
+                icon: "error",
+                confirmButtonText: "Retry"
+            });
+        });
+    });
     </script>
+    
+        
+    
 </body>
 
 </html>
