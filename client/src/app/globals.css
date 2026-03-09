@@ -1,0 +1,120 @@
+@import "tailwindcss";
+
+:root {
+  --color-primary: #3a405a;
+  --color-primary-2: #685044;
+  --color-surface: #f9dec9;
+  --color-accent-blue: #99b2dd;
+  --color-accent-blush: #e9afa3;
+
+  --color-bg: #fffaf7;
+  --color-bg-soft: #fdf3eb;
+  --color-card: #ffffff;
+
+  --color-text: #3a405a;
+  --color-text-soft: #685044;
+  --color-border: rgba(104, 80, 68, 0.18);
+
+  --color-btn-primary: #3a405a;
+  --color-btn-primary-text: #f9dec9;
+
+  --color-btn-secondary: #99b2dd;
+  --color-btn-secondary-text: #3a405a;
+
+  --color-btn-accent: #e9afa3;
+  --color-btn-accent-text: #3a405a;
+
+  --shadow-soft: 0 10px 30px rgba(58, 64, 90, 0.10);
+  --shadow-card: 0 12px 40px rgba(58, 64, 90, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at top, rgba(153, 178, 221, 0.18), transparent 32%),
+    linear-gradient(180deg, #fffaf7 0%, #fdf3eb 100%);
+  color: var(--color-text);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.section-light {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.section-soft {
+  background: var(--color-bg-soft);
+  color: var(--color-text);
+}
+
+.section-dark {
+  background: var(--color-primary);
+  color: var(--color-surface);
+}
+
+.text-primary {
+  color: var(--color-primary);
+}
+
+.text-secondary {
+  color: var(--color-primary-2);
+}
+
+.text-accent-blue {
+  color: var(--color-accent-blue);
+}
+
+.text-accent-blush {
+  color: var(--color-accent-blush);
+}
+
+.text-soft {
+  color: var(--color-text-soft);
+}
+
+.bg-card {
+  background: var(--color-card);
+  box-shadow: var(--shadow-card);
+}
+
+.bg-surface {
+  background: var(--color-surface);
+}
+
+.border-soft {
+  border: 1px solid var(--color-border);
+}
+
+.btn-primary {
+  background: var(--color-btn-primary);
+  color: var(--color-btn-primary-text);
+}
+
+.btn-secondary {
+  background: var(--color-btn-secondary);
+  color: var(--color-btn-secondary-text);
+}
+
+.btn-accent {
+  background: var(--color-btn-accent);
+  color: var(--color-btn-accent-text);
+}
