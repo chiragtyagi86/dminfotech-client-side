@@ -1,12 +1,11 @@
 // app/admin/settings/page.tsx
 // ─────────────────────────────────────────────────────────────────────────────
 // Site Settings — manage global configuration, branding, contact info, social
-// Includes file uploads for logo, favicon, and social share images
 // ─────────────────────────────────────────────────────────────────────────────
 
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 interface Settings {
   siteName: string;
@@ -25,10 +24,194 @@ interface Settings {
   footerDescription: string;
 }
 
-const TABS = ['General', 'Contact', 'Brand', 'Social', 'Footer'];
+interface MediaItem {
+  filePath: string;
+  fileName?: string;
+}
+
+interface Media {
+  logo: MediaItem | null;
+  favicon: MediaItem | null;
+  defaultSocialImage: MediaItem | null;
+}
+
+interface Previews {
+  logo: string | null;
+  favicon: string | null;
+  defaultSocialImage: string | null;
+}
+
+type TabType = 'General' | 'Contact' | 'Brand' | 'Social' | 'Footer';
+
+const TABS: TabType[] = ['General', 'Contact', 'Brand', 'Social', 'Footer'];
+
+// Move these OUTSIDE to prevent remounting
+function Field({
+  label,
+  id,
+  placeholder,
+  value,
+  onChange,
+  type = 'text',
+  hint,
+}: {
+  label: string;
+  id: string;
+  placeholder: string;
+  value: string;
+  onChange: (v: string) => void;
+  type?: string;
+  hint?: string;
+}) {
+  return (
+    <div className="field-wrap">
+      <label className="field-label" htmlFor={id}>
+        {label}
+      </label>
+      {hint && <p className="field-hint">{hint}</p>}
+      <input
+        id={id}
+        type={type}
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.currentTarget.value)}
+        className="field-input"
+      />
+    </div>
+  );
+}
+
+function TextArea({
+  label,
+  id,
+  placeholder,
+  value,
+  onChange,
+  hint,
+}: {
+  label: string;
+  id: string;
+  placeholder: string;
+  value: string;
+  onChange: (v: string) => void;
+  hint?: string;
+}) {
+  return (
+    <div className="field-wrap">
+      <label className="field-label" htmlFor={id}>
+        {label}
+      </label>
+      {hint && <p className="field-hint">{hint}</p>}
+      <textarea
+        id={id}
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.currentTarget.value)}
+        rows={4}
+        className="field-textarea"
+      />
+    </div>
+  );
+}
+
+function UploadField({
+  label,
+  fieldKey,
+  inputRef,
+  hint,
+  dimensions,
+  preview,
+  onUpload,
+  onRemove,
+}: {
+  label: string;
+  fieldKey: string;
+  inputRef: React.RefObject<HTMLInputElement>;
+  hint?: string;
+  dimensions?: string;
+  preview: string | null;
+  onUpload: (file: File | null) => void;
+  onRemove: () => void;
+}) {
+  return (
+    <div className="field-wrap">
+      <label className="field-label">{label}</label>
+      {hint && (
+        <p className="field-hint">
+          {hint}
+          {dimensions && (
+            <span style={{ color: '#99b2dd', marginLeft: 6 }}>
+              Recommended: {dimensions}
+            </span>
+          )}
+        </p>
+      )}
+      <div className="upload-zone" onClick={() => inputRef.current?.click()}>
+        {preview ? (
+          <img src={preview} alt="preview" className="upload-preview" />
+        ) : (
+          <div style={{ textAlign: 'center' }}>
+            <div className="upload-icon">↑</div>
+            <p className="upload-text">Click to upload</p>
+          </div>
+        )}
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          style={{ display: 'none' }}
+          onChange={(e) => {
+            const target = e.currentTarget;
+            onUpload(target.files?.[0] || null);
+          }}
+        />
+      </div>
+      {preview && (
+        <button className="remove-btn" onClick={onRemove}>
+          Remove
+        </button>
+      )}
+    </div>
+  );
+}
+
+function SocialField({
+  label,
+  id,
+  icon,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  id: string;
+  icon: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+}) {
+  return (
+    <div className="field-wrap">
+      <label className="field-label" htmlFor={id}>
+        {label}
+      </label>
+      <div className="input-prefix-wrap">
+        <span className="input-prefix">{icon}</span>
+        <input
+          id={id}
+          type="url"
+          placeholder={placeholder}
+          value={value}
+          onChange={(e) => onChange(e.currentTarget.value)}
+          className="field-input input-with-prefix"
+        />
+      </div>
+    </div>
+  );
+}
 
 export default function SiteSettingsPage() {
-  const [activeTab, setActiveTab] = useState('General');
+  const [activeTab, setActiveTab] = useState<TabType>('General');
   const [settings, setSettings] = useState<Settings>({
     siteName: '',
     siteTagline: '',
@@ -46,13 +229,13 @@ export default function SiteSettingsPage() {
     footerDescription: '',
   });
 
-  const [media, setMedia] = useState<any>({
+  const [media, setMedia] = useState<Media>({
     logo: null,
     favicon: null,
     defaultSocialImage: null,
   });
 
-  const [previews, setPreviews] = useState<any>({
+  const [previews, setPreviews] = useState<Previews>({
     logo: null,
     favicon: null,
     defaultSocialImage: null,
@@ -62,9 +245,9 @@ export default function SiteSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const logoRef = useRef<HTMLInputElement>(null);
-  const faviconRef = useRef<HTMLInputElement>(null);
-  const socialImageRef = useRef<HTMLInputElement>(null);
+  const logoRef = useRef<HTMLInputElement>(null!);
+  const faviconRef = useRef<HTMLInputElement>(null!);
+  const socialImageRef = useRef<HTMLInputElement>(null!);
 
   useEffect(() => {
     fetchSettings();
@@ -80,15 +263,14 @@ export default function SiteSettingsPage() {
         setSettings(json.data.settings);
         setMedia(json.data.media);
         
-        // Set previews from existing media
         if (json.data.media.logo?.filePath) {
-          setPreviews(p => ({ ...p, logo: json.data.media.logo.filePath }));
+          setPreviews((p: Previews) => ({ ...p, logo: json.data.media.logo.filePath }));
         }
         if (json.data.media.favicon?.filePath) {
-          setPreviews(p => ({ ...p, favicon: json.data.media.favicon.filePath }));
+          setPreviews((p: Previews) => ({ ...p, favicon: json.data.media.favicon.filePath }));
         }
         if (json.data.media.defaultSocialImage?.filePath) {
-          setPreviews(p => ({ ...p, defaultSocialImage: json.data.media.defaultSocialImage.filePath }));
+          setPreviews((p: Previews) => ({ ...p, defaultSocialImage: json.data.media.defaultSocialImage.filePath }));
         }
       }
     } catch (err) {
@@ -98,12 +280,12 @@ export default function SiteSettingsPage() {
     }
   }
 
-  const updateSetting = (key: string, value: string) => {
-    setSettings(p => ({ ...p, [key]: value }));
+  const updateSetting = useCallback((key: keyof Settings, value: string) => {
+    setSettings((p: Settings) => ({ ...p, [key]: value }));
     setSaved(false);
-  };
+  }, []);
 
-  const handleFileUpload = async (key: string, file: File | null, ref: any) => {
+  const handleFileUpload = useCallback(async (key: keyof Previews, file: File | null) => {
     if (!file) return;
 
     try {
@@ -120,9 +302,12 @@ export default function SiteSettingsPage() {
 
       if (res.ok) {
         const reader = new FileReader();
-        reader.onload = e => {
-          setPreviews(p => ({ ...p, [key]: e.target?.result }));
-        };
+       reader.onload = (e: ProgressEvent<FileReader>) => {
+  const target = e.target as FileReader;  // ✅ Explicitly cast
+  if (target?.result) {
+    setPreviews((p: Previews) => ({ ...p, [key]: target.result as string }));
+  }
+};
         reader.readAsDataURL(file);
       } else {
         alert(json.message || 'Failed to upload file');
@@ -130,24 +315,24 @@ export default function SiteSettingsPage() {
     } catch (err) {
       console.error('Failed to upload file:', err);
     }
-  };
+  }, []);
 
-  const removeMedia = async (key: string) => {
+  const removeMedia = useCallback(async (key: keyof Previews) => {
     try {
       const res = await fetch(`/api/admin/settings/media/${key}`, {
         method: 'DELETE',
       });
 
       if (res.ok) {
-        setPreviews(p => ({ ...p, [key]: null }));
-        setMedia(p => ({ ...p, [key]: null }));
+        setPreviews((p: Previews) => ({ ...p, [key]: null }));
+        setMedia((m: Media) => ({ ...m, [key]: null }));
       }
     } catch (err) {
       console.error('Failed to remove media:', err);
     }
-  };
+  }, []);
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     try {
       setSaving(true);
       const res = await fetch('/api/admin/settings', {
@@ -169,92 +354,14 @@ export default function SiteSettingsPage() {
     } finally {
       setSaving(false);
     }
-  };
-
-  // UI Components
-  const Field = ({ label, id, placeholder, value, onChange, type = 'text', hint }: any) => (
-    <div className="field-wrap">
-      <label className="field-label" htmlFor={id}>{label}</label>
-      {hint && <p className="field-hint">{hint}</p>}
-      <input
-        id={id}
-        type={type}
-        placeholder={placeholder}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        className="field-input"
-      />
-    </div>
-  );
-
-  const TextArea = ({ label, id, placeholder, value, onChange, hint }: any) => (
-    <div className="field-wrap">
-      <label className="field-label" htmlFor={id}>{label}</label>
-      {hint && <p className="field-hint">{hint}</p>}
-      <textarea
-        id={id}
-        placeholder={placeholder}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        rows={4}
-        className="field-textarea"
-      />
-    </div>
-  );
-
-  const UploadField = ({ label, fieldKey, inputRef, hint, dimensions }: any) => (
-    <div className="field-wrap">
-      <label className="field-label">{label}</label>
-      {hint && (
-        <p className="field-hint">
-          {hint}
-          {dimensions && <span style={{ color: '#99b2dd', marginLeft: 6 }}>Recommended: {dimensions}</span>}
-        </p>
-      )}
-      <div className="upload-zone" onClick={() => inputRef.current?.click()}>
-        {previews[fieldKey] ? (
-          <img src={previews[fieldKey]} alt="preview" className="upload-preview" />
-        ) : (
-          <div style={{ textAlign: 'center' }}>
-            <div className="upload-icon">↑</div>
-            <p className="upload-text">Click to upload</p>
-          </div>
-        )}
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          style={{ display: 'none' }}
-          onChange={e => handleFileUpload(fieldKey, e.target.files?.[0] || null, inputRef)}
-        />
-      </div>
-      {previews[fieldKey] && (
-        <button className="remove-btn" onClick={() => removeMedia(fieldKey)}>
-          Remove
-        </button>
-      )}
-    </div>
-  );
-
-  const SocialField = ({ label, id, icon, value, onChange, placeholder }: any) => (
-    <div className="field-wrap">
-      <label className="field-label" htmlFor={id}>{label}</label>
-      <div className="input-prefix-wrap">
-        <span className="input-prefix">{icon}</span>
-        <input
-          id={id}
-          type="url"
-          placeholder={placeholder}
-          value={value}
-          onChange={e => onChange(e.target.value)}
-          className="field-input input-with-prefix"
-        />
-      </div>
-    </div>
-  );
+  }, [settings]);
 
   if (loading) {
-    return <div className="settings-page"><div className="loading">Loading settings...</div></div>;
+    return (
+      <div className="settings-page">
+        <div className="loading">Loading settings...</div>
+      </div>
+    );
   }
 
   return (
@@ -544,7 +651,7 @@ export default function SiteSettingsPage() {
 
       {/* Tabs */}
       <div className="tab-bar">
-        {TABS.map(tab => (
+        {TABS.map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -571,7 +678,7 @@ export default function SiteSettingsPage() {
                   id="siteName"
                   placeholder="My Awesome Company"
                   value={settings.siteName}
-                  onChange={(v: string) => updateSetting('siteName', v)}
+                  onChange={(v) => updateSetting('siteName', v)}
                   hint="Appears in the browser tab and header."
                 />
               </div>
@@ -580,7 +687,7 @@ export default function SiteSettingsPage() {
                 id="siteTagline"
                 placeholder="Crafting experiences that matter"
                 value={settings.siteTagline}
-                onChange={(v: string) => updateSetting('siteTagline', v)}
+                onChange={(v) => updateSetting('siteTagline', v)}
               />
               <div style={{ gridColumn: '1 / -1' }}>
                 <TextArea
@@ -588,7 +695,7 @@ export default function SiteSettingsPage() {
                   id="companyDescription"
                   placeholder="A short paragraph about your company..."
                   value={settings.companyDescription}
-                  onChange={(v: string) => updateSetting('companyDescription', v)}
+                  onChange={(v) => updateSetting('companyDescription', v)}
                   hint="Used in About sections and default SEO descriptions."
                 />
               </div>
@@ -604,7 +711,7 @@ export default function SiteSettingsPage() {
                 type="email"
                 placeholder="hello@company.com"
                 value={settings.email}
-                onChange={(v: string) => updateSetting('email', v)}
+                onChange={(v) => updateSetting('email', v)}
               />
               <Field
                 label="Phone Number"
@@ -612,7 +719,7 @@ export default function SiteSettingsPage() {
                 type="tel"
                 placeholder="+1 (555) 000-0000"
                 value={settings.phone}
-                onChange={(v: string) => updateSetting('phone', v)}
+                onChange={(v) => updateSetting('phone', v)}
               />
               <Field
                 label="WhatsApp Number"
@@ -620,7 +727,7 @@ export default function SiteSettingsPage() {
                 type="tel"
                 placeholder="+1 (555) 000-0000"
                 value={settings.whatsapp}
-                onChange={(v: string) => updateSetting('whatsapp', v)}
+                onChange={(v) => updateSetting('whatsapp', v)}
                 hint="Include country code for WhatsApp links."
               />
               <div style={{ gridColumn: '1 / -1' }}>
@@ -629,7 +736,7 @@ export default function SiteSettingsPage() {
                   id="address"
                   placeholder="123 Main St, Suite 100&#10;New York, NY 10001"
                   value={settings.address}
-                  onChange={(v: string) => updateSetting('address', v)}
+                  onChange={(v) => updateSetting('address', v)}
                 />
               </div>
             </>
@@ -644,6 +751,9 @@ export default function SiteSettingsPage() {
                 inputRef={logoRef}
                 hint="Main logo used in header."
                 dimensions="200×60px SVG or PNG"
+                preview={previews.logo}
+                onUpload={(file) => handleFileUpload('logo', file)}
+                onRemove={() => removeMedia('logo')}
               />
               <UploadField
                 label="Favicon"
@@ -651,6 +761,9 @@ export default function SiteSettingsPage() {
                 inputRef={faviconRef}
                 hint="Small icon in browser tab."
                 dimensions="32×32px ICO or PNG"
+                preview={previews.favicon}
+                onUpload={(file) => handleFileUpload('favicon', file)}
+                onRemove={() => removeMedia('favicon')}
               />
               <div style={{ gridColumn: '1 / -1' }}>
                 <UploadField
@@ -659,6 +772,9 @@ export default function SiteSettingsPage() {
                   inputRef={socialImageRef}
                   hint="Shown when pages are shared on social media."
                   dimensions="1200×630px"
+                  preview={previews.defaultSocialImage}
+                  onUpload={(file) => handleFileUpload('defaultSocialImage', file)}
+                  onRemove={() => removeMedia('defaultSocialImage')}
                 />
               </div>
             </>
@@ -673,7 +789,7 @@ export default function SiteSettingsPage() {
                 icon="f"
                 placeholder="https://facebook.com/yourpage"
                 value={settings.facebookUrl}
-                onChange={(v: string) => updateSetting('facebookUrl', v)}
+                onChange={(v) => updateSetting('facebookUrl', v)}
               />
               <SocialField
                 label="LinkedIn"
@@ -681,7 +797,7 @@ export default function SiteSettingsPage() {
                 icon="in"
                 placeholder="https://linkedin.com/company/yourco"
                 value={settings.linkedinUrl}
-                onChange={(v: string) => updateSetting('linkedinUrl', v)}
+                onChange={(v) => updateSetting('linkedinUrl', v)}
               />
               <SocialField
                 label="Instagram"
@@ -689,7 +805,7 @@ export default function SiteSettingsPage() {
                 icon="📷"
                 placeholder="https://instagram.com/yourhandle"
                 value={settings.instagramUrl}
-                onChange={(v: string) => updateSetting('instagramUrl', v)}
+                onChange={(v) => updateSetting('instagramUrl', v)}
               />
               <SocialField
                 label="Twitter / X"
@@ -697,7 +813,7 @@ export default function SiteSettingsPage() {
                 icon="𝕏"
                 placeholder="https://twitter.com/yourhandle"
                 value={settings.twitterUrl}
-                onChange={(v: string) => updateSetting('twitterUrl', v)}
+                onChange={(v) => updateSetting('twitterUrl', v)}
               />
               <SocialField
                 label="YouTube"
@@ -705,7 +821,7 @@ export default function SiteSettingsPage() {
                 icon="▶"
                 placeholder="https://youtube.com/@yourchannel"
                 value={settings.youtubeUrl}
-                onChange={(v: string) => updateSetting('youtubeUrl', v)}
+                onChange={(v) => updateSetting('youtubeUrl', v)}
               />
             </>
           )}
@@ -719,7 +835,7 @@ export default function SiteSettingsPage() {
                   id="copyrightText"
                   placeholder="© 2025 My Company. All rights reserved."
                   value={settings.copyrightText}
-                  onChange={(v: string) => updateSetting('copyrightText', v)}
+                  onChange={(v) => updateSetting('copyrightText', v)}
                   hint="Displayed at the bottom of every page."
                 />
               </div>
@@ -729,7 +845,7 @@ export default function SiteSettingsPage() {
                   id="footerDescription"
                   placeholder="A short tagline or description shown in the footer..."
                   value={settings.footerDescription}
-                  onChange={(v: string) => updateSetting('footerDescription', v)}
+                  onChange={(v) => updateSetting('footerDescription', v)}
                 />
               </div>
             </>

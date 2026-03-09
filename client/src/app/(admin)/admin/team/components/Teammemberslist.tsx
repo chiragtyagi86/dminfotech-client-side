@@ -4,27 +4,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 "use client";
-
-interface TeamMember {
-  id: number;
-  name?: string;
-  position?: string;
-  bio?: string;
-  photoUrl?: string;
-  photo_url?: string;
-  email?: string;
-  phone?: string;
-  shortDesc?: string;
-  short_desc?: string;
-  linkedinUrl?: string;
-  linkedin_url?: string;
-  twitterUrl?: string;
-  twitter_url?: string;
-  websiteUrl?: string;
-  website_url?: string;
-  resumeUrl?: string;
-  resume_url?: string;
-}
+import { TeamMember } from "../types";
 
 interface TeamMembersListProps {
   members: TeamMember[];

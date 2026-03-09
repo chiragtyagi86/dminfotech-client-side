@@ -4,7 +4,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import db from "./db";
-import type { ServiceItem } from "../src/app/components/services/ServiceBlocks";
+import type { ServiceItem } from "./types";
 
 /**
  * Get all published services ordered by sort_order.

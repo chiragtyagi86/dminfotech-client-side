@@ -1,18 +1,128 @@
 import Link from "next/link";
 import Container from "@/app/components/common/Container";
 import SectionHeading from "@/app/components/common/SectionHeading";
-import { blogPosts, formatDate } from "../../../../lib/blog-data";
+import { getAllPosts, getAllCategories, formatDate } from "../../../../lib/blog-data";
+import type { BlogCategory } from "../../../../lib/blog-data";
+import { JSX } from "react";
 
-// ── CMS NOTE: Replace blogPosts import with async CMS fetch ──
-// e.g.  const posts = await getPosts()  ← your CMS function
-// The rest of this component works unchanged.
-const featured = blogPosts.find((p) => p.featured)!;
-const grid = blogPosts.filter((p) => !p.featured);
+// ─────────────────────────────────────────────────────────────────────────────
+// Icon map for categories
+// ─────────────────────────────────────────────────────────────────────────────
+const categoryMeta: Record<string, { desc: string; icon: JSX.Element }> = {
+  "Web Development": {
+    desc: "Business websites, CMS platforms, landing pages and web performance.",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <rect x="3" y="3" width="18" height="18" rx="2" />
+        <polyline points="9,9 15,9" />
+        <polyline points="9,13 13,13" />
+      </svg>
+    ),
+  },
+  "Software Development": {
+    desc: "Custom applications, ERP systems, automation and SaaS platforms.",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <polyline points="16,18 22,12 16,6" />
+        <polyline points="8,6 2,12 8,18" />
+      </svg>
+    ),
+  },
+  "Digital Strategy": {
+    desc: "UI/UX design, conversion optimisation and digital transformation.",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path d="M2 20h20M5 20V10l7-7 7 7v10" />
+      </svg>
+    ),
+  },
+  "SEO & Marketing": {
+    desc: "Search architecture, content hierarchy, metadata and ranking strategy.",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
+    ),
+  },
+  "Business Technology": {
+    desc: "Digital transformation, tech adoption and innovation for SMBs.",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <rect x="2" y="7" width="20" height="14" rx="2" />
+        <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" />
+      </svg>
+    ),
+  },
+  "Stock Market & Finance": {
+    desc: "Investment education, market analysis and financial literacy.",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <polyline points="22,12 18,12 15,21 9,3 6,12 2,12" />
+      </svg>
+    ),
+  },
+  "Research & Academia": {
+    desc: "Journal publishing, academic content and institutional digital services.",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path d="M4 4h16v14H4z" />
+        <line x1="8" y1="9" x2="16" y2="9" />
+        <line x1="8" y1="13" x2="13" y2="13" />
+      </svg>
+    ),
+  },
+};
 
-export default function BlogContent() {
+function getCategoryMeta(category: BlogCategory) {
+  const fallback = {
+    desc: category.description || "Explore articles in this category.",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path d="M4 4h16v16H4z" />
+        <path d="M8 8h8M8 12h8M8 16h5" />
+      </svg>
+    ),
+  };
+
+  return categoryMeta[category.name] || fallback;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BlogContent
+// ─────────────────────────────────────────────────────────────────────────────
+export default async function BlogContent() {
+  const posts = await getAllPosts();
+
+  if (!posts || posts.length === 0) {
+    return (
+      <section className="blog-grid-section">
+        <style>{`
+          .blog-grid-section {
+            padding: 72px 0 96px;
+            background: var(--color-bg-soft);
+          }
+
+          .blog-empty {
+            text-align: center;
+            padding: 80px 20px;
+            font-family: 'DM Sans', sans-serif;
+            color: rgba(104,80,68,0.55);
+          }
+        `}</style>
+
+        <Container>
+          <div className="blog-empty">No blog posts published yet.</div>
+        </Container>
+      </section>
+    );
+  }
+
+  const featured = posts[0];
+  const grid = posts.slice(1);
+
   return (
     <>
-      {/* ─── Featured Article ─────────────────────────────────────── */}
       <section className="blog-featured-section">
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&family=DM+Sans:wght@300;400;500&display=swap');
@@ -44,7 +154,6 @@ export default function BlogContent() {
             background: linear-gradient(90deg, var(--color-accent-blue), var(--color-accent-blush));
           }
 
-          /* Featured card */
           .blog-featured-card {
             display: grid; grid-template-columns: 1fr;
             border-radius: 24px;
@@ -64,7 +173,6 @@ export default function BlogContent() {
             box-shadow: 0 24px 64px rgba(58,64,90,0.11);
           }
 
-          /* Cover image placeholder */
           .bfc-img {
             position: relative; min-height: 280px; overflow: hidden;
           }
@@ -83,7 +191,6 @@ export default function BlogContent() {
             background-size: 32px 32px;
           }
 
-          /* Animated diagonal stripes decoration */
           .bfc-img-deco {
             position: absolute; inset: 0;
             display: flex; align-items: center; justify-content: center; gap: 14px;
@@ -95,7 +202,6 @@ export default function BlogContent() {
             transform: rotate(22deg);
           }
 
-          /* Top accent bar */
           .bfc-accent-bar {
             position: absolute; top: 0; left: 0; right: 0; height: 3px;
             background: linear-gradient(90deg, var(--color-accent-blue), var(--color-accent-blush));
@@ -112,7 +218,6 @@ export default function BlogContent() {
             padding: 4px 12px; border-radius: 100px;
           }
 
-          /* Body */
           .bfc-body {
             padding: 40px 36px 40px;
             display: flex; flex-direction: column;
@@ -163,10 +268,9 @@ export default function BlogContent() {
             font-family: 'DM Sans', sans-serif;
             font-size: 12px; font-weight: 500;
             letter-spacing: 0.10em; text-transform: uppercase;
-            color: var(--color-primary);
-            padding: 10px 22px; border-radius: 3px;
             background: var(--color-btn-primary);
             color: var(--color-btn-primary-text);
+            padding: 10px 22px; border-radius: 3px;
             transition: transform 0.25s ease, box-shadow 0.25s ease;
             width: fit-content;
           }
@@ -204,7 +308,6 @@ export default function BlogContent() {
             font-size: 11px; font-weight: 300; color: var(--color-text-soft); margin: 0;
           }
 
-          /* ─── Blog Grid ─────────────────────────────── */
           .blog-grid-section {
             padding: 72px 0 96px;
             background: var(--color-bg-soft);
@@ -227,6 +330,7 @@ export default function BlogContent() {
             display: flex; flex-direction: column;
             text-decoration: none;
             transition: transform 0.38s cubic-bezier(0.4,0,0.2,1), box-shadow 0.38s ease;
+            position: relative;
           }
 
           .blog-card:hover {
@@ -234,7 +338,6 @@ export default function BlogContent() {
             box-shadow: 0 24px 60px rgba(58,64,90,0.10);
           }
 
-          /* Shimmer sweep */
           .blog-card::after {
             content: '';
             position: absolute; top: 0; left: -100%;
@@ -244,10 +347,9 @@ export default function BlogContent() {
             transition: left 0.6s ease;
             pointer-events: none; z-index: 2;
           }
-          .blog-card:hover::after { left: 140%; }
-          .blog-card { position: relative; }
 
-          /* Image */
+          .blog-card:hover::after { left: 140%; }
+
           .bc-img {
             height: 168px; position: relative; overflow: hidden; flex-shrink: 0;
           }
@@ -293,7 +395,6 @@ export default function BlogContent() {
             padding: 3px 10px; border-radius: 100px;
           }
 
-          /* Top bar that reveals on hover */
           .bc-top-bar {
             position: absolute; top: 0; left: 0; right: 0; height: 2px;
             background: linear-gradient(90deg, var(--color-accent-blue), var(--color-accent-blush));
@@ -304,7 +405,6 @@ export default function BlogContent() {
 
           .blog-card:hover .bc-top-bar { transform: scaleX(1); }
 
-          /* Body */
           .bc-body {
             padding: 22px 24px 24px;
             flex: 1; display: flex; flex-direction: column;
@@ -366,7 +466,6 @@ export default function BlogContent() {
             transform: rotate(45deg);
           }
 
-          /* Tags row */
           .bc-tags {
             display: flex; flex-wrap: wrap; gap: 5px; margin-top: 12px;
           }
@@ -382,27 +481,29 @@ export default function BlogContent() {
         `}</style>
 
         <Container>
-          {/* Featured label */}
           <div className="blog-featured-label">Featured Article</div>
 
-          {/* Featured card */}
           <Link href={`/blog/${featured.slug}`} className="blog-featured-card">
-            {/* Cover */}
             <div className="bfc-img">
-              <div className="bfc-img-bg"
-                style={{ background: `linear-gradient(145deg, ${featured.coverAccent}, rgba(255,250,247,0.50))` }} />
+              <div
+                className="bfc-img-bg"
+                style={{
+                  background: `linear-gradient(145deg, ${featured.coverAccent}, rgba(255,250,247,0.50))`,
+                }}
+              />
               <div className="bfc-img-grid" />
               <div className="bfc-img-deco">
-                {[...Array(7)].map((_, i) => <div key={i} className="bfc-deco-stripe" />)}
+                {[...Array(7)].map((_, i) => (
+                  <div key={i} className="bfc-deco-stripe" />
+                ))}
               </div>
               <div className="bfc-accent-bar" />
               <span className="bfc-cat-badge">{featured.category}</span>
             </div>
 
-            {/* Body */}
             <div className="bfc-body">
               <div className="bfc-meta">
-                <span className="bfc-meta-date">{formatDate(featured.publishDate)}</span>
+                <span className="bfc-meta-date">{formatDate(featured.published_at)}</span>
                 <span className="bfc-meta-sep" />
                 <span className="bfc-meta-read">{featured.readTime} min read</span>
               </div>
@@ -416,10 +517,12 @@ export default function BlogContent() {
               </span>
 
               <div className="bfc-author">
-                <div className="bfc-author-avatar">D</div>
+                <div className="bfc-author-avatar">
+                  {(featured.author?.name || "D").charAt(0).toUpperCase()}
+                </div>
                 <div>
-                  <p className="bfc-author-name">{featured.author.name}</p>
-                  <p className="bfc-author-role">{featured.author.role}</p>
+                  <p className="bfc-author-name">{featured.author?.name || "Dhanamitra Team"}</p>
+                  <p className="bfc-author-role">{featured.author?.role || "Editorial"}</p>
                 </div>
               </div>
             </div>
@@ -427,7 +530,6 @@ export default function BlogContent() {
         </Container>
       </section>
 
-      {/* ─── Blog Grid ─────────────────────────────────────────────── */}
       <section className="blog-grid-section">
         <Container>
           <SectionHeading
@@ -441,26 +543,30 @@ export default function BlogContent() {
               <Link key={post.slug} href={`/blog/${post.slug}`} className="blog-card">
                 <div className="bc-top-bar" />
 
-                {/* Image */}
                 <div className="bc-img">
-                  <div className="bc-img-bg"
-                    style={{ background: `linear-gradient(145deg, ${post.coverAccent}, rgba(255,250,247,0.45))` }} />
+                  <div
+                    className="bc-img-bg"
+                    style={{
+                      background: `linear-gradient(145deg, ${post.coverAccent}, rgba(255,250,247,0.45))`,
+                    }}
+                  />
                   <div className="bc-img-grid" />
                   <div className="bc-img-deco">
-                    {[...Array(5)].map((_, i) => <div key={i} className="bc-deco-line" />)}
+                    {[...Array(5)].map((_, i) => (
+                      <div key={i} className="bc-deco-line" />
+                    ))}
                   </div>
                   <span className="bc-cat">{post.category}</span>
                   <span className="bc-read">{post.readTime} min</span>
                 </div>
 
-                {/* Body */}
                 <div className="bc-body">
-                  <p className="bc-date">{formatDate(post.publishDate)}</p>
+                  <p className="bc-date">{formatDate(post.published_at)}</p>
                   <h3 className="bc-title">{post.title}</h3>
                   <p className="bc-excerpt">{post.excerpt}</p>
 
                   <div className="bc-tags">
-                    {post.tags.slice(0, 3).map((t) => (
+                    {post.tags.slice(0, 3).map((t: string) => (
                       <span key={t} className="bc-tag">#{t}</span>
                     ))}
                   </div>
@@ -476,5 +582,112 @@ export default function BlogContent() {
         </Container>
       </section>
     </>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BlogCategories
+// ─────────────────────────────────────────────────────────────────────────────
+export async function BlogCategories() {
+  const categories = await getAllCategories();
+
+  return (
+    <section className="blogcat-section">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600&family=DM+Sans:wght@300;400;500&display=swap');
+
+        .blogcat-section {
+          padding: 80px 0;
+          background: var(--color-bg);
+          position: relative;
+        }
+
+        .blogcat-section::before {
+          content: '';
+          position: absolute; top: 0; left: 0; right: 0; height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(104,80,68,0.10), transparent);
+        }
+
+        .blogcat-grid {
+          display: grid; grid-template-columns: repeat(2, 1fr);
+          gap: 14px; margin-top: 52px;
+        }
+
+        @media (min-width: 768px)  { .blogcat-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (min-width: 1280px) { .blogcat-grid { grid-template-columns: repeat(7, 1fr); } }
+
+        .blogcat-card {
+          border-radius: 18px;
+          border: 1px solid rgba(104,80,68,0.09);
+          background: rgba(255,255,255,0.62);
+          backdrop-filter: blur(8px);
+          padding: 22px 16px;
+          text-align: center;
+          display: flex; flex-direction: column; align-items: center; gap: 12px;
+          text-decoration: none;
+          transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+        }
+
+        .blogcat-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 14px 40px rgba(58,64,90,0.09);
+          background: rgba(255,255,255,0.90);
+        }
+
+        .blogcat-icon {
+          width: 42px; height: 42px; border-radius: 11px;
+          background: linear-gradient(135deg, rgba(153,178,221,0.18), rgba(233,175,163,0.12));
+          border: 1px solid rgba(104,80,68,0.09);
+          display: flex; align-items: center; justify-content: center;
+          transition: background 0.3s ease;
+        }
+
+        .blogcat-card:hover .blogcat-icon { background: var(--color-primary); }
+
+        .blogcat-icon svg {
+          width: 18px; height: 18px;
+          color: var(--color-primary); transition: color 0.3s ease;
+        }
+
+        .blogcat-card:hover .blogcat-icon svg { color: var(--color-surface); }
+
+        .blogcat-name {
+          font-family: 'DM Sans', sans-serif;
+          font-size: 12px; font-weight: 500;
+          color: var(--color-primary); margin: 0; line-height: 1.3;
+        }
+
+        .blogcat-desc {
+          font-family: 'DM Sans', sans-serif;
+          font-size: 11px; font-weight: 300;
+          line-height: 1.55; color: var(--color-text-soft); margin: 0;
+        }
+      `}</style>
+
+      <Container>
+        <SectionHeading
+          eyebrow="Categories"
+          title="Browse by topic"
+          description="Explore articles organised by the areas that matter most to your business."
+        />
+
+        <div className="blogcat-grid">
+          {categories.map((cat) => {
+            const meta = getCategoryMeta(cat);
+            return (
+              <Link
+                key={cat.slug}
+                href={`/blog/category/${cat.slug}`}
+                className="blogcat-card"
+              >
+                <div className="blogcat-icon">{meta.icon}</div>
+                <p className="blogcat-name">{cat.name}</p>
+                <p className="blogcat-desc">{meta.desc}</p>
+              </Link>
+            );
+          })}
+        </div>
+      </Container>
+    </section>
   );
 }

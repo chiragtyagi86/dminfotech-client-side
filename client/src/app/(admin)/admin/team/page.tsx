@@ -6,23 +6,21 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import TeamMembersList from "./components/Teammemberslist";
 import TeamMemberForm, { TeamMemberFormData } from "./components/TeamMemberForm";
+import { TeamMember } from "./types";
 
-interface TeamMember extends TeamMemberFormData {
-  id: number;
+type TeamMemberFormInitialData = TeamMemberFormData & {
+  id?: number;
   photoUrl?: string;
   photo_url?: string;
-  createdAt?: string;
-  created_at?: string;
   short_desc?: string;
   linkedin_url?: string;
   twitter_url?: string;
   website_url?: string;
   resume_url?: string;
-  signature?: string;
-}
+};
 
 export default function TeamAdminPage() {
   const [members, setMembers] = useState<TeamMember[]>([]);
@@ -39,23 +37,32 @@ export default function TeamAdminPage() {
   async function fetchMembers() {
     try {
       setLoading(true);
+
       const res = await fetch(`/api/admin/team?search=${encodeURIComponent(search)}`);
       const json = await res.json();
 
-      // Transform snake_case to camelCase
-      const transformed = (json.data || []).map((m: any) => ({
-        ...m,
-        name: m.name,
-        position: m.position,
-        bio: m.bio,
-        photoUrl: m.photoUrl || m.photo_url,
-        shortDesc: m.shortDesc || m.short_desc,
-        email: m.email,
-        linkedinUrl: m.linkedinUrl || m.linkedin_url,
-        twitterUrl: m.twitterUrl || m.twitter_url,
-        websiteUrl: m.websiteUrl || m.website_url,
-        resumeUrl: m.resumeUrl || m.resume_url,
-        signature: m.signature,
+      const transformed: TeamMember[] = (json.data || []).map((m: any) => ({
+        id: Number(m.id),
+        name: m.name ?? "",
+        position: m.position ?? "",
+        bio: m.bio ?? "",
+        shortDesc: m.shortDesc ?? m.short_desc ?? "",
+        email: m.email ?? "",
+        phone: m.phone ?? "",
+        photoUrl: m.photoUrl ?? m.photo_url ?? "",
+        photo_url: m.photo_url ?? "",
+        linkedinUrl: m.linkedinUrl ?? m.linkedin_url ?? "",
+        linkedin_url: m.linkedin_url ?? "",
+        twitterUrl: m.twitterUrl ?? m.twitter_url ?? "",
+        twitter_url: m.twitter_url ?? "",
+        websiteUrl: m.websiteUrl ?? m.website_url ?? "",
+        website_url: m.website_url ?? "",
+        resumeUrl: m.resumeUrl ?? m.resume_url ?? "",
+        resume_url: m.resume_url ?? "",
+        short_desc: m.short_desc ?? "",
+        signature: m.signature ?? "",
+        createdAt: m.createdAt ?? m.created_at ?? "",
+        created_at: m.created_at ?? "",
       }));
 
       setMembers(transformed);
@@ -67,13 +74,41 @@ export default function TeamAdminPage() {
     }
   }
 
+  function toFormInitialData(member: TeamMember): TeamMemberFormInitialData {
+    return {
+      id: member.id,
+      name: member.name ?? "",
+      position: member.position ?? "",
+      bio: member.bio ?? "",
+      shortDesc: member.shortDesc ?? member.short_desc ?? "",
+      short_desc: member.short_desc ?? member.shortDesc ?? "",
+      email: member.email ?? "",
+      photoUrl: member.photoUrl ?? member.photo_url ?? "",
+      photo_url: member.photo_url ?? member.photoUrl ?? "",
+      linkedinUrl: member.linkedinUrl ?? member.linkedin_url ?? "",
+      linkedin_url: member.linkedin_url ?? member.linkedinUrl ?? "",
+      twitterUrl: member.twitterUrl ?? member.twitter_url ?? "",
+      twitter_url: member.twitter_url ?? member.twitterUrl ?? "",
+      websiteUrl: member.websiteUrl ?? member.website_url ?? "",
+      website_url: member.website_url ?? member.websiteUrl ?? "",
+      resumeUrl: member.resumeUrl ?? member.resume_url ?? "",
+      resume_url: member.resume_url ?? member.resumeUrl ?? "",
+      signature: member.signature ?? "",
+    };
+  }
+
   async function handleFormSubmit(data: TeamMemberFormData, photoFile?: File) {
     try {
       setFormLoading(true);
+
       const formDataObj = new FormData();
+
       Object.entries(data).forEach(([key, value]) => {
-        formDataObj.append(key, String(value));
+        if (value !== undefined && value !== null) {
+          formDataObj.append(key, String(value));
+        }
       });
+
       if (photoFile) {
         formDataObj.append("photo", photoFile);
       }
@@ -243,7 +278,6 @@ export default function TeamAdminPage() {
         }
       `}</style>
 
-      {/* Page Header */}
       <div className="page-header">
         <Link href="/admin" className="back-link">
           ← Back to Admin
@@ -251,7 +285,6 @@ export default function TeamAdminPage() {
         <h1 className="page-title">Team Management</h1>
       </div>
 
-      {/* Content */}
       <div className="page-content">
         {view === "list" ? (
           <TeamMembersList
@@ -269,13 +302,13 @@ export default function TeamAdminPage() {
               <h2 className="form-title">
                 {view === "new" ? "Create New Team Member" : "Edit Team Member"}
               </h2>
-              <button className="form-back-btn" onClick={handleBackToList}>
+              <button type="button" className="form-back-btn" onClick={handleBackToList}>
                 ← Back to List
               </button>
             </div>
 
             <TeamMemberForm
-              initialData={editingMember || undefined}
+              initialData={editingMember ? toFormInitialData(editingMember) : undefined}
               onSubmit={handleFormSubmit}
               onCancel={handleBackToList}
               isLoading={formLoading}

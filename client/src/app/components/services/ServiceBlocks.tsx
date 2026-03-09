@@ -3,8 +3,9 @@
 import { useState } from "react";
 import Container from "@/app/components/common/Container";
 import SectionHeading from "@/app/components/common/SectionHeading";
+import type { ServiceBlock } from "../../../../lib/types";
 
-const blocks = [
+const blocks: ServiceBlock[] = [
   {
     id: "web",
     num: "01",

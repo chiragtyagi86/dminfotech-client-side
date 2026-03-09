@@ -9,18 +9,17 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import TestimonialsList from "./components/TestimonialsList";
 import TestimonialForm, { TestimonialFormData } from "./components/TestimonialForm";
+import { Testimonial } from "./types";
 
-interface Testimonial extends TestimonialFormData {
-  id: number;
-  createdAt?: string;
-  created_at?: string;
+type TestimonialFormInitialData = TestimonialFormData & {
+  id?: number;
   clientPhoto?: string;
   client_photo?: string;
   client_name?: string;
   client_company?: string;
   client_role?: string;
   short_highlight?: string;
-}
+};
 
 export default function TestimonialsAdminPage() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
@@ -39,17 +38,26 @@ export default function TestimonialsAdminPage() {
       setLoading(true);
       const res = await fetch(`/api/admin/testimonials?search=${encodeURIComponent(search)}`);
       const json = await res.json();
-      
-      // Transform snake_case to camelCase
-      const transformed = (json.data || []).map((t: any) => ({
-        ...t,
-        clientName: t.clientName || t.client_name,
-        clientCompany: t.clientCompany || t.client_company,
-        clientRole: t.clientRole || t.client_role,
-        clientPhoto: t.clientPhoto || t.client_photo,
-        shortHighlight: t.shortHighlight || t.short_highlight,
+
+      const transformed: Testimonial[] = (json.data || []).map((t: any) => ({
+        id: Number(t.id),
+        clientName: t.clientName ?? t.client_name ?? "",
+        clientCompany: t.clientCompany ?? t.client_company ?? "",
+        clientRole: t.clientRole ?? t.client_role ?? "",
+        quote: t.quote ?? "",
+        rating: Number(t.rating ?? 5),
+        shortHighlight: t.shortHighlight ?? t.short_highlight ?? "",
+        featured: Boolean(t.featured),
+        clientPhoto: t.clientPhoto ?? t.client_photo ?? "",
+        client_photo: t.client_photo ?? "",
+        client_name: t.client_name ?? "",
+        client_company: t.client_company ?? "",
+        client_role: t.client_role ?? "",
+        short_highlight: t.short_highlight ?? "",
+        createdAt: t.createdAt ?? t.created_at ?? "",
+        created_at: t.created_at ?? "",
       }));
-      
+
       setTestimonials(transformed);
     } catch (err) {
       console.error("Failed to fetch testimonials:", err);
@@ -59,19 +67,44 @@ export default function TestimonialsAdminPage() {
     }
   }
 
+  function toFormInitialData(testimonial: Testimonial): TestimonialFormInitialData {
+    return {
+      id: testimonial.id,
+      clientName: testimonial.clientName ?? testimonial.client_name ?? "",
+      clientCompany: testimonial.clientCompany ?? testimonial.client_company ?? "",
+      clientRole: testimonial.clientRole ?? testimonial.client_role ?? "",
+      quote: testimonial.quote ?? "",
+      rating: testimonial.rating ?? 5,
+      shortHighlight: testimonial.shortHighlight ?? testimonial.short_highlight ?? "",
+      featured: testimonial.featured ?? false,
+      clientPhoto: testimonial.clientPhoto ?? testimonial.client_photo ?? "",
+      client_photo: testimonial.client_photo ?? testimonial.clientPhoto ?? "",
+      client_name: testimonial.client_name ?? testimonial.clientName ?? "",
+      client_company: testimonial.client_company ?? testimonial.clientCompany ?? "",
+      client_role: testimonial.client_role ?? testimonial.clientRole ?? "",
+      short_highlight: testimonial.short_highlight ?? testimonial.shortHighlight ?? "",
+    };
+  }
+
   async function handleFormSubmit(data: TestimonialFormData, photoFile?: File) {
     try {
       setFormLoading(true);
       const formDataObj = new FormData();
+
       Object.entries(data).forEach(([key, value]) => {
-        formDataObj.append(key, String(value));
+        if (value !== undefined && value !== null) {
+          formDataObj.append(key, String(value));
+        }
       });
+
       if (photoFile) {
         formDataObj.append("photo", photoFile);
       }
 
       const isEdit = view === "edit" && editingTestimonial;
-      const url = isEdit ? `/api/admin/testimonials/${editingTestimonial.id}` : "/api/admin/testimonials";
+      const url = isEdit
+        ? `/api/admin/testimonials/${editingTestimonial.id}`
+        : "/api/admin/testimonials";
       const method = isEdit ? "PUT" : "POST";
 
       const res = await fetch(url, { method, body: formDataObj });
@@ -253,7 +286,6 @@ export default function TestimonialsAdminPage() {
         }
       `}</style>
 
-      {/* Page Header */}
       <div className="page-header">
         <Link href="/admin" className="back-link">
           ← Back to Admin
@@ -261,7 +293,6 @@ export default function TestimonialsAdminPage() {
         <h1 className="page-title">Testimonials Management</h1>
       </div>
 
-      {/* Content */}
       <div className="page-content">
         {view === "list" ? (
           <TestimonialsList
@@ -280,13 +311,13 @@ export default function TestimonialsAdminPage() {
               <h2 className="form-title">
                 {view === "new" ? "Create New Testimonial" : "Edit Testimonial"}
               </h2>
-              <button className="form-back-btn" onClick={handleBackToList}>
+              <button type="button" className="form-back-btn" onClick={handleBackToList}>
                 ← Back to List
               </button>
             </div>
 
             <TestimonialForm
-              initialData={editingTestimonial || undefined}
+              initialData={editingTestimonial ? toFormInitialData(editingTestimonial) : undefined}
               onSubmit={handleFormSubmit}
               onCancel={handleBackToList}
               isLoading={formLoading}

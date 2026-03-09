@@ -1,8 +1,4 @@
 // app/api/admin/settings/media/route.ts
-// ─────────────────────────────────────────────────────────────────────────────
-// POST /api/admin/settings/media   → upload media file (logo, favicon, etc.)
-// ─────────────────────────────────────────────────────────────────────────────
-
 import { NextRequest, NextResponse } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
@@ -80,56 +76,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (err) {
     console.error("[settings/media/POST]", err);
-    return NextResponse.json({ message: "Server error." }, { status: 500 });
-  }
-}
-
-// app/api/admin/settings/media/[key]/route.ts
-// ─────────────────────────────────────────────────────────────────────────────
-// DELETE /api/admin/settings/media/[key]   → delete media file
-// ─────────────────────────────────────────────────────────────────────────────
-
-import { unlink } from "fs/promises";
-
-interface RouteParams {
-  params: Promise<{ key: string }>;
-}
-
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
-  const auth = await requireAdmin(request);
-  if (!auth.ok) return auth.response;
-
-  try {
-    const { key } = await params;
-
-    // Get file path from database
-    const [rows] = await pool.query<any[]>(
-      "SELECT file_path FROM site_media WHERE media_key = ?",
-      [key]
-    );
-
-    if (rows.length === 0) {
-      return NextResponse.json({ message: "Media not found" }, { status: 404 });
-    }
-
-    const filePath = (rows as any[])[0].file_path;
-    const fullPath = join(process.cwd(), "public", filePath);
-
-    // Delete file from filesystem
-    try {
-      await unlink(fullPath);
-    } catch (err) {
-      console.warn("File not found on disk:", fullPath);
-    }
-
-    // Delete from database
-    await pool.query("DELETE FROM site_media WHERE media_key = ?", [key]);
-
-    return NextResponse.json({
-      message: "Media deleted successfully",
-    });
-  } catch (err) {
-    console.error("[settings/media/[key]/DELETE]", err);
     return NextResponse.json({ message: "Server error." }, { status: 500 });
   }
 }

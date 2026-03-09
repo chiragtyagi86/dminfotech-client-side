@@ -63,9 +63,8 @@ export default function BlogForm({ initialData, onSubmit, isSaving }: Props) {
   const [uploadingCover,  setUploadingCover]  = useState(false);
   const [uploadingOg,     setUploadingOg]     = useState(false);
   const [uploadError,     setUploadError]     = useState("");
-
-  const coverInputRef = useRef<HTMLInputElement>(null);
-  const ogInputRef    = useRef<HTMLInputElement>(null);
+const coverInputRef = useRef<HTMLInputElement>(null!);
+  const ogInputRef    = useRef<HTMLInputElement>(null!);
 
   // Auto-generate slug
   useEffect(() => {

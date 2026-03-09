@@ -17,21 +17,22 @@ export interface TeamMemberFormData {
   twitterUrl: string;
   websiteUrl: string;
   resumeUrl: string;
-  signature?: string;
+  signature: string;
+}
+
+interface TeamMemberFormInitialData extends TeamMemberFormData {
+  id?: number;
+  photoUrl?: string;
+  photo_url?: string;
+  short_desc?: string;
+  linkedin_url?: string;
+  twitter_url?: string;
+  website_url?: string;
+  resume_url?: string;
 }
 
 interface TeamMemberFormProps {
-  initialData?: TeamMemberFormData & { 
-    id?: number; 
-    photoUrl?: string;
-    photo_url?: string;
-    short_desc?: string;
-    linkedin_url?: string;
-    twitter_url?: string;
-    website_url?: string;
-    resume_url?: string;
-    signature?: string;
-  };
+  initialData?: TeamMemberFormInitialData;
   onSubmit: (data: TeamMemberFormData, photoFile?: File) => Promise<void>;
   onCancel: () => void;
   isLoading?: boolean;
@@ -85,32 +86,39 @@ export default function TeamMemberForm({
 
   function handlePhotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (file) {
-      setPhotoFile(file);
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        setPhotoPreview(ev.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+    if (!file) return;
+
+    setPhotoFile(file);
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setPhotoPreview((ev.target?.result as string) || "");
+    };
+    reader.readAsDataURL(file);
   }
 
   function handleSignatureSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (file) {
-      setSignatureFile(file);
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        setSignaturePreview(ev.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+    if (!file) return;
+
+    setSignatureFile(file);
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const result = (ev.target?.result as string) || "";
+      setSignaturePreview(result);
+      setFormData((prev) => ({
+        ...prev,
+        signature: result,
+      }));
+    };
+    reader.readAsDataURL(file);
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!formData.name || !formData.position) {
+    if (!formData.name.trim() || !formData.position.trim()) {
       alert("Name and position are required");
       return;
     }
@@ -300,7 +308,6 @@ export default function TeamMemberForm({
         }
       `}</style>
 
-      {/* Basic Information Section */}
       <div className="form-section">
         <label className="form-section-title">Basic Information</label>
 
@@ -324,9 +331,7 @@ export default function TeamMemberForm({
               className="form-input"
               placeholder="e.g., CEO, Director"
               value={formData.position}
-              onChange={(e) =>
-                setFormData({ ...formData, position: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, position: e.target.value })}
               required
             />
           </div>
@@ -340,9 +345,7 @@ export default function TeamMemberForm({
               className="form-input"
               placeholder="e.g., Digital visionary & business strategist"
               value={formData.shortDesc}
-              onChange={(e) =>
-                setFormData({ ...formData, shortDesc: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, shortDesc: e.target.value })}
             />
           </div>
 
@@ -359,17 +362,16 @@ export default function TeamMemberForm({
               <label htmlFor="photo-input" className="photo-btn">
                 Choose Photo
               </label>
-              {photoPreview && (
+              {photoPreview ? (
                 <div className="photo-preview">
                   <img src={photoPreview} alt="Preview" />
                 </div>
-              )}
+              ) : null}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Professional Details Section */}
       <div className="form-section">
         <label className="form-section-title">Professional Details</label>
 
@@ -402,15 +404,12 @@ export default function TeamMemberForm({
               className="form-input"
               placeholder="https://example.com"
               value={formData.websiteUrl}
-              onChange={(e) =>
-                setFormData({ ...formData, websiteUrl: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, websiteUrl: e.target.value })}
             />
           </div>
         </div>
       </div>
 
-      {/* Social Links Section */}
       <div className="form-section">
         <label className="form-section-title">Social & Documents</label>
 
@@ -422,9 +421,7 @@ export default function TeamMemberForm({
               className="form-input"
               placeholder="https://linkedin.com/in/username"
               value={formData.linkedinUrl}
-              onChange={(e) =>
-                setFormData({ ...formData, linkedinUrl: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, linkedinUrl: e.target.value })}
             />
           </div>
 
@@ -435,9 +432,7 @@ export default function TeamMemberForm({
               className="form-input"
               placeholder="https://twitter.com/username"
               value={formData.twitterUrl}
-              onChange={(e) =>
-                setFormData({ ...formData, twitterUrl: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, twitterUrl: e.target.value })}
             />
           </div>
         </div>
@@ -449,9 +444,7 @@ export default function TeamMemberForm({
             className="form-input"
             placeholder="https://example.com/resume.pdf"
             value={formData.resumeUrl}
-            onChange={(e) =>
-              setFormData({ ...formData, resumeUrl: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, resumeUrl: e.target.value })}
           />
         </div>
 
@@ -468,16 +461,15 @@ export default function TeamMemberForm({
             <label htmlFor="signature-input" className="photo-btn">
               Choose Signature
             </label>
-            {signaturePreview && (
+            {signaturePreview ? (
               <div className="photo-preview">
                 <img src={signaturePreview} alt="Signature Preview" />
               </div>
-            )}
+            ) : null}
           </div>
         </div>
       </div>
 
-      {/* Actions */}
       <div className="form-actions">
         <button
           type="button"

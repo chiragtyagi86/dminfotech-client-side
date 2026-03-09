@@ -18,15 +18,15 @@ export interface TestimonialFormData {
 }
 
 interface TestimonialFormProps {
-  initialData?: (TestimonialFormData & { 
-    id?: number; 
+  initialData?: TestimonialFormData & {
+    id?: number;
     clientPhoto?: string;
     client_photo?: string;
     client_name?: string;
     client_company?: string;
     client_role?: string;
     short_highlight?: string;
-  });
+  };
   onSubmit: (data: TestimonialFormData, photoFile?: File) => Promise<void>;
   onCancel: () => void;
   isLoading?: boolean;
@@ -83,7 +83,7 @@ export default function TestimonialForm({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!formData.clientName || !formData.quote) {
+    if (!formData.clientName.trim() || !formData.quote.trim()) {
       alert("Client name and quote are required");
       return;
     }
@@ -328,7 +328,6 @@ export default function TestimonialForm({
         }
       `}</style>
 
-      {/* Client Information Section */}
       <div className="form-section">
         <label className="form-section-title">Client Information</label>
 
@@ -398,7 +397,6 @@ export default function TestimonialForm({
         </div>
       </div>
 
-      {/* Testimonial Content Section */}
       <div className="form-section">
         <label className="form-section-title">Testimonial Content</label>
 
@@ -452,7 +450,6 @@ export default function TestimonialForm({
         </div>
       </div>
 
-      {/* Settings Section */}
       <div className="form-section">
         <label className="form-section-title">Settings</label>
 
@@ -472,7 +469,6 @@ export default function TestimonialForm({
         </div>
       </div>
 
-      {/* Actions */}
       <div className="form-actions">
         <button
           type="button"

@@ -5,24 +5,7 @@
 
 "use client";
 
-interface Testimonial {
-  id: number;
-  clientName?: string;
-  client_name?: string;
-  clientCompany?: string;
-  client_company?: string;
-  clientRole?: string;
-  client_role?: string;
-  clientPhoto?: string;
-  client_photo?: string;
-  quote?: string;
-  rating?: number;
-  shortHighlight?: string;
-  short_highlight?: string;
-  featured?: boolean | number;
-  createdAt?: string;
-  created_at?: string;
-}
+import { Testimonial } from "../types";
 
 interface TestimonialsListProps {
   testimonials: Testimonial[];
@@ -335,7 +318,6 @@ export default function TestimonialsList({
         }
       `}</style>
 
-      {/* Header with Search and Add Button */}
       <div className="list-header">
         <h1 className="list-heading">Testimonials</h1>
         <div className="list-controls">
@@ -346,13 +328,12 @@ export default function TestimonialsList({
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
           />
-          <button className="list-btn" onClick={onAddNew}>
+          <button type="button" className="list-btn" onClick={onAddNew}>
             + Add Testimonial
           </button>
         </div>
       </div>
 
-      {/* Testimonials Grid */}
       {loading ? (
         <div className="list-loading">Loading testimonials...</div>
       ) : filteredTestimonials.length === 0 ? (
@@ -365,23 +346,30 @@ export default function TestimonialsList({
         <div className="list-grid">
           {filteredTestimonials.map((testimonial) => (
             <div key={testimonial.id} className="testimonial-card">
-              {/* Header */}
               <div className="card-header">
                 <div className="card-photo">
-                  {(testimonial.clientPhoto || testimonial.client_photo) ? (
-                    <img src={(testimonial.clientPhoto || testimonial.client_photo) as string} alt={testimonial.clientName || testimonial.client_name} />
+                  {testimonial.clientPhoto || testimonial.client_photo ? (
+                    <img
+                      src={testimonial.clientPhoto || testimonial.client_photo || ""}
+                      alt={testimonial.clientName || testimonial.client_name || "Client"}
+                    />
                   ) : (
                     "👤"
                   )}
                 </div>
                 <div className="card-info">
-                  <h3 className="card-name">{testimonial.clientName || testimonial.client_name}</h3>
-                  <p className="card-role">{testimonial.clientRole || testimonial.client_role}</p>
-                  <p className="card-company">{testimonial.clientCompany || testimonial.client_company}</p>
+                  <h3 className="card-name">
+                    {testimonial.clientName || testimonial.client_name}
+                  </h3>
+                  <p className="card-role">
+                    {testimonial.clientRole || testimonial.client_role}
+                  </p>
+                  <p className="card-company">
+                    {testimonial.clientCompany || testimonial.client_company}
+                  </p>
                 </div>
               </div>
 
-              {/* Body */}
               <div className="card-body">
                 <div className="card-rating">
                   {[...Array(5)].map((_, i) => (
@@ -400,30 +388,32 @@ export default function TestimonialsList({
                 <p className="card-quote">"{testimonial.quote || ""}"</p>
 
                 {(testimonial.shortHighlight || testimonial.short_highlight) && (
-                  <p className="card-highlight">✓ {testimonial.shortHighlight || testimonial.short_highlight}</p>
+                  <p className="card-highlight">
+                    ✓ {testimonial.shortHighlight || testimonial.short_highlight}
+                  </p>
                 )}
 
-                {(testimonial.featured === true || testimonial.featured === 1) && (
-                  <p className="card-badge">📌 Featured</p>
-                )}
+                {testimonial.featured && <p className="card-badge">📌 Featured</p>}
               </div>
 
-              {/* Footer Actions */}
               <div className="card-footer">
                 <button
-                  className="card-btn card-btn-featured"
-                  onClick={() => onToggleFeatured(testimonial.id, testimonial.featured === true || testimonial.featured === 1)}
+                  type="button"
+                  className={`card-btn card-btn-featured ${testimonial.featured ? "active" : ""}`}
+                  onClick={() => onToggleFeatured(testimonial.id, testimonial.featured)}
                   title={testimonial.featured ? "Remove from featured" : "Add to featured"}
                 >
                   {testimonial.featured ? "★ Featured" : "☆ Feature"}
                 </button>
                 <button
+                  type="button"
                   className="card-btn card-btn-edit"
-                  onClick={() => onEdit(testimonial as any)}
+                  onClick={() => onEdit(testimonial)}
                 >
                   Edit
                 </button>
                 <button
+                  type="button"
                   className="card-btn card-btn-delete"
                   onClick={() => onDelete(testimonial.id)}
                 >

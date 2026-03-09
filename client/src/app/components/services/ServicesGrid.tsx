@@ -7,19 +7,7 @@
 import Link from "next/link";
 import Container from "@/app/components/common/Container";
 import SectionHeading from "@/app/components/common/SectionHeading";
-
-export type ServiceItem = {
-  id: number;
-  title: string;
-  slug: string;
-  short_desc: string;
-  content: string | null;
-  icon: string | null;
-  sort_order: number;
-  status: string;
-  meta_title: string | null;
-  meta_description: string | null;
-};
+import type { ServiceItem } from "../../../../lib/types";
 
 // ── Accent colours — cycles if more services are added ────────────────────────
 const ACCENTS = [
@@ -33,18 +21,24 @@ const ACCENTS = [
 ];
 
 // ── Parse the JSON `content` field from the services table ────────────────────
-function parseContent(raw: string | null) {
+function parseContent(raw: string | null | undefined) {
   if (!raw) return { tag: "", tagline: "", features: [] as string[] };
+
   try {
     const p = JSON.parse(raw);
     return {
-      tag:     p.tag     ?? "",
+      tag: p.tag ?? "",
       tagline: p.tagline ?? "",
       features: p.features
         ? typeof p.features === "string"
-          ? p.features.split(",").map((f: string) => f.trim()).filter(Boolean)
-          : Array.isArray(p.features) ? p.features : []
-        : [] as string[],
+          ? p.features
+              .split(",")
+              .map((f: string) => f.trim())
+              .filter(Boolean)
+          : Array.isArray(p.features)
+            ? p.features
+            : []
+        : ([] as string[]),
     };
   } catch {
     return { tag: "", tagline: "", features: [] as string[] };
@@ -54,52 +48,115 @@ function parseContent(raw: string | null) {
 // ── Static fallback — shown if DB returns 0 rows ──────────────────────────────
 const STATIC_SERVICES = [
   {
-    num: "01", slug: "website-development", title: "Website Development",
-    tag: "Web", tagline: "Business websites that convert",
+    num: "01",
+    slug: "website-development",
+    title: "Website Development",
+    tag: "Web",
+    tagline: "Business websites that convert",
     desc: "Fast, responsive and conversion-focused business websites, corporate portals, landing pages and CMS-powered platforms designed for credibility and growth.",
-    features: ["Business Websites", "Corporate Portals", "Landing Pages", "CMS Integration", "E-Commerce"],
+    features: [
+      "Business Websites",
+      "Corporate Portals",
+      "Landing Pages",
+      "CMS Integration",
+      "E-Commerce",
+    ],
     accent: "rgba(153,178,221,0.25)",
   },
   {
-    num: "02", slug: "software-development", title: "Custom Software Development",
-    tag: "Software", tagline: "Built for your operations",
+    num: "02",
+    slug: "software-development",
+    title: "Custom Software Development",
+    tag: "Software",
+    tagline: "Built for your operations",
     desc: "Custom business applications, automation systems, ERP tools and operational platforms engineered for scalability, reliability and long-term performance.",
-    features: ["Business Applications", "ERP Systems", "Automation Tools", "API Integrations", "SaaS Platforms"],
+    features: [
+      "Business Applications",
+      "ERP Systems",
+      "Automation Tools",
+      "API Integrations",
+      "SaaS Platforms",
+    ],
     accent: "rgba(233,175,163,0.22)",
   },
   {
-    num: "03", slug: "digital-strategy", title: "Digital Strategy & SEO",
-    tag: "Growth", tagline: "Visibility & performance",
+    num: "03",
+    slug: "digital-strategy",
+    title: "Digital Strategy & SEO",
+    tag: "Growth",
+    tagline: "Visibility & performance",
     desc: "SEO-ready architecture, performance-focused pages, UI/UX optimization, lead funnels and strategic digital support built to improve search ranking and conversions.",
-    features: ["SEO Architecture", "Performance Optimization", "Lead Funnels", "UI/UX Consulting", "Analytics Setup"],
+    features: [
+      "SEO Architecture",
+      "Performance Optimization",
+      "Lead Funnels",
+      "UI/UX Consulting",
+      "Analytics Setup",
+    ],
     accent: "rgba(249,222,201,0.45)",
   },
   {
-    num: "04", slug: "it-placements", title: "IT Placement Services",
-    tag: "Staffing", tagline: "The right talent, fast",
+    num: "04",
+    slug: "it-placements",
+    title: "IT Placement Services",
+    tag: "Staffing",
+    tagline: "The right talent, fast",
     desc: "End-to-end IT talent sourcing and placement services — connecting businesses with vetted software engineers, designers, project managers and technology specialists.",
-    features: ["Tech Talent Sourcing", "Contract Staffing", "Permanent Placements", "Team Augmentation", "Skills Assessment"],
+    features: [
+      "Tech Talent Sourcing",
+      "Contract Staffing",
+      "Permanent Placements",
+      "Team Augmentation",
+      "Skills Assessment",
+    ],
     accent: "rgba(153,178,221,0.18)",
   },
   {
-    num: "05", slug: "journal-publishing", title: "Research Journal Publishing",
-    tag: "Publishing", tagline: "Academic excellence published",
+    num: "05",
+    slug: "journal-publishing",
+    title: "Research Journal Publishing",
+    tag: "Publishing",
+    tagline: "Academic excellence published",
     desc: "Professional academic and research journal publishing services — editorial support, peer-review management, digital formatting, ISSN registration and online distribution.",
-    features: ["Editorial Support", "Peer Review Management", "ISSN Registration", "Digital Distribution", "Indexing Support"],
+    features: [
+      "Editorial Support",
+      "Peer Review Management",
+      "ISSN Registration",
+      "Digital Distribution",
+      "Indexing Support",
+    ],
     accent: "rgba(233,175,163,0.18)",
   },
   {
-    num: "06", slug: "stock-market-training", title: "Stock Market Training",
-    tag: "Finance", tagline: "Invest with knowledge",
+    num: "06",
+    slug: "stock-market-training",
+    title: "Stock Market Training",
+    tag: "Finance",
+    tagline: "Invest with knowledge",
     desc: "Structured stock market and investment training programs — from fundamentals to technical analysis, portfolio management and real-market trading strategies.",
-    features: ["Fundamentals Training", "Technical Analysis", "Portfolio Management", "Live Market Sessions", "Risk Management"],
+    features: [
+      "Fundamentals Training",
+      "Technical Analysis",
+      "Portfolio Management",
+      "Live Market Sessions",
+      "Risk Management",
+    ],
     accent: "rgba(249,222,201,0.38)",
   },
   {
-    num: "07", slug: "brand-support", title: "Brand & Digital Presence",
-    tag: "Branding", tagline: "Look premium, build trust",
+    num: "07",
+    slug: "brand-support",
+    title: "Brand & Digital Presence",
+    tag: "Branding",
+    tagline: "Look premium, build trust",
     desc: "Corporate digital identity, website redesign, content structure and trust-first online positioning that makes your brand stand out in a competitive market.",
-    features: ["Website Redesign", "Brand Identity", "Content Strategy", "Trust Positioning", "Digital Collateral"],
+    features: [
+      "Website Redesign",
+      "Brand Identity",
+      "Content Strategy",
+      "Trust Positioning",
+      "Digital Collateral",
+    ],
     accent: "rgba(153,178,221,0.20)",
   },
 ];
@@ -107,23 +164,22 @@ const STATIC_SERVICES = [
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function ServicesGrid({ services }: { services: ServiceItem[] }) {
-
-  // If DB has data — use it. Otherwise fall back to static list.
-  const displayServices = services.length > 0
-    ? services.map((svc, i) => {
-        const c = parseContent(svc.content);
-        return {
-          num:      String(i + 1).padStart(2, "0"),
-          slug:     svc.slug,
-          title:    svc.title,
-          tag:      c.tag      || svc.icon || "",
-          tagline:  c.tagline  || "",
-          desc:     svc.short_desc,
-          features: c.features,
-          accent:   ACCENTS[i % ACCENTS.length],
-        };
-      })
-    : STATIC_SERVICES;
+  const displayServices =
+    services.length > 0
+      ? services.map((svc, i) => {
+          const c = parseContent(svc.content);
+          return {
+            num: String(i + 1).padStart(2, "0"),
+            slug: svc.slug,
+            title: svc.title,
+            tag: c.tag || svc.icon || "",
+            tagline: c.tagline || "",
+            desc: svc.short_desc,
+            features: c.features,
+            accent: ACCENTS[i % ACCENTS.length],
+          };
+        })
+      : STATIC_SERVICES;
 
   return (
     <section className="svcgrid-section">
@@ -354,9 +410,9 @@ export default function ServicesGrid({ services }: { services: ServiceItem[] }) 
               <p className="svcgrid-desc">{svc.desc}</p>
 
               <div className="svcgrid-features">
-                {svc.features.map((f) => (
-                  <span key={f} className="svcgrid-feature">{f}</span>
-                ))}
+               {svc.features.map((f: string) => (
+  <span key={f} className="svcgrid-feature">{f}</span>
+))}
               </div>
 
               <Link href={`/services/${svc.slug}`} className="svcgrid-link">

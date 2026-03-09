@@ -33,7 +33,7 @@ function toDisplayProject(p: PortfolioItem, index: number) {
     slug: p.slug,
     title: p.title,
     category: p.category,
-    desc: p.short_desc || p.description || "",
+desc: p.short_desc || "",
     accent: c.accent || ACCENTS[index % ACCENTS.length],
     year: c.year || String(new Date().getFullYear()),
     status: p.status || "in-progress",

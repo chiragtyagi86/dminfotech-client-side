@@ -1,40 +1,39 @@
 import Link from "next/link";
 import Container from "@/app/components/common/Container";
 import SectionHeading from "@/app/components/common/SectionHeading";
+import type { ServiceItem } from "../../../../lib/types";
 
-export type ServiceItem = {
-  id: number;
-  title: string;
-  slug: string;
-  short_desc: string;
-  content: string | null;
-  icon: string | null;
-  sort_order: number;
-  status: string;
-  meta_title: string | null;
-  meta_description: string | null;
-};
-
-// ── Accent colours — cycles if more services are added ────────────────────────
+// ── Accent colour cycle (fallback when DB row has no accent) ──────────────────
 const ACCENTS = [
-  "rgba(153,178,221,0.25)",
+  "rgba(153,178,221,0.30)",
+  "rgba(233,175,163,0.28)",
+  "rgba(249,222,201,0.50)",
+  "rgba(153,178,221,0.20)",
   "rgba(233,175,163,0.22)",
-  "rgba(249,222,201,0.45)",
-  "rgba(153,178,221,0.18)",
+  "rgba(249,222,201,0.40)",
 ];
 
-// ── Parse the JSON `content` field from the services table ────────────────────
-function parseContent(raw: string | null) {
-  if (!raw) return { tag: "", tagline: "" };
+function parseContent(raw: string | null | undefined): Record<string, any> {
+  if (!raw) return {};
   try {
-    const p = JSON.parse(raw);
-    return {
-      tag:     p.tag     ?? "",
-      tagline: p.tagline ?? "",
-    };
+    return JSON.parse(raw);
   } catch {
-    return { tag: "", tagline: "" };
+    return {};
   }
+}
+
+function toDisplayProject(p: ServiceItem, index: number) {
+  const c = parseContent(p.content || null);
+
+  return {
+    slug: p.slug,
+    title: p.title,
+    tag: c.tag || p.icon || "Service",
+    tagline: c.tagline || "",
+    desc: p.short_desc || "",
+    accent: c.accent || ACCENTS[index % ACCENTS.length],
+    num: String(index + 1).padStart(2, "0"),
+  };
 }
 
 // ── Static fallback — shown if DB returns 0 rows ──────────────────────────────
@@ -80,7 +79,6 @@ const STATIC_SERVICES = [
 // ── Get latest 4 services from database ────────────────────────────────────────
 async function getLatestServices(): Promise<ServiceItem[]> {
   try {
-    // Import dynamically to avoid issues in different environments
     const { getAllServices } = await import("../../../../lib/services-data");
     const services = await getAllServices();
     return services.slice(0, 4);
@@ -95,21 +93,10 @@ async function getLatestServices(): Promise<ServiceItem[]> {
 export default async function ServicesPreview() {
   const dbServices = await getLatestServices();
 
-  // If DB has data — use it. Otherwise fall back to static list.
-  const displayServices = dbServices.length > 0
-    ? dbServices.map((svc, i) => {
-        const c = parseContent(svc.content);
-        return {
-          num:      String(i + 1).padStart(2, "0"),
-          slug:     svc.slug,
-          title:    svc.title,
-          tag:      c.tag      || svc.icon || "Service",
-          tagline:  c.tagline  || "",
-          desc:     svc.short_desc,
-          accent:   ACCENTS[i % ACCENTS.length],
-        };
-      })
-    : STATIC_SERVICES;
+  const displayServices =
+    dbServices.length > 0
+      ? dbServices.map((svc, i) => toDisplayProject(svc, i))
+      : STATIC_SERVICES;
 
   return (
     <section className="services-section">
@@ -176,7 +163,6 @@ export default async function ServicesPreview() {
           opacity: 1;
         }
 
-        /* Gradient top accent */
         .service-card-accent {
           position: absolute;
           top: 0; left: 0; right: 0;
@@ -263,7 +249,6 @@ export default async function ServicesPreview() {
           transform: translateX(3px);
         }
 
-        /* Divider between num and body */
         .service-divider {
           width: 28px;
           height: 1px;
