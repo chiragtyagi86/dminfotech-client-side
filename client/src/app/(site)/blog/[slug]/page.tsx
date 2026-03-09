@@ -1,7 +1,7 @@
 // app/blog/[slug]/page.tsx
 // ─────────────────────────────────────────────────────────────────────────────
 // Blog article page — fully connected to dhanamitra_cms MySQL database.
-// Replaces all static data lookups with async DB calls.
+// Dynamic rendering enabled to avoid build-time DB connection on Vercel.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { notFound } from "next/navigation";
@@ -11,18 +11,13 @@ import Container from "@/app/components/common/Container";
 import {
   getPostBySlug,
   getRelatedPosts,
-  getAllSlugs,
   formatDate,
 } from "../../../../../lib/blog-data";
-import type { BlogPost } from "../../../../../lib/blog-data";
 import { getBlogPostSeo, getGlobalSeo, buildMetadata } from "../../../../../lib/seo-data";
 
-// ── Static params — tells Next.js which slugs to pre-render ──────────────────
-
-export async function generateStaticParams() {
-  const slugs = await getAllSlugs();
-  return slugs.map((slug) => ({ slug }));
-}
+// Force dynamic rendering so Vercel does not try to fetch DB data at build time
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 // ── Dynamic SEO metadata per article ─────────────────────────────────────────
 
@@ -32,22 +27,26 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+
   const [post, seo, global] = await Promise.all([
     getPostBySlug(slug),
     getBlogPostSeo(slug),
     getGlobalSeo(),
   ]);
-  if (!post) return { title: "Article Not Found" };
+
+  if (!post) {
+    return { title: "Article Not Found" };
+  }
 
   return buildMetadata({
     seo,
     global,
-    fallbackTitle:       post.title,
+    fallbackTitle: post.title,
     fallbackDescription: post.excerpt || "",
-    fallbackImage:       post.og_image || post.cover_image || undefined,
-    canonicalPath:       `/blog/${slug}`,
-    type:                "article",
-    publishedTime:       post.published_at || undefined,
+    fallbackImage: post.og_image || post.cover_image || undefined,
+    canonicalPath: `/blog/${slug}`,
+    type: "article",
+    publishedTime: post.published_at || undefined,
   });
 }
 
@@ -60,11 +59,16 @@ export default async function BlogArticlePage({
 }) {
   const { slug } = await params;
 
-  // Parallel DB fetches
   const post = await getPostBySlug(slug);
   if (!post) notFound();
 
   const related = await getRelatedPosts(post);
+
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, "") ||
+    "https://dmifotech.com";
+
+  const articleUrl = `${siteUrl}/blog/${post.slug}`;
 
   return (
     <main>
@@ -380,44 +384,6 @@ export default async function BlogArticlePage({
         /* ── Sidebar ── */
         .art-sidebar { display: flex; flex-direction: column; gap: 20px; }
         @media (min-width: 1024px) { .art-sidebar { position: sticky; top: 96px; } }
-        .art-toc-card {
-          border-radius: 18px;
-          border: 1px solid rgba(104,80,68,0.09);
-          background: rgba(255,255,255,0.65);
-          backdrop-filter: blur(10px);
-          padding: 24px 22px; overflow: hidden; position: relative;
-        }
-        .art-toc-card::before {
-          content: '';
-          position: absolute; top: 0; left: 0; right: 0; height: 2px;
-          background: linear-gradient(90deg, var(--color-accent-blue), var(--color-accent-blush));
-        }
-        .art-toc-title {
-          font-family: 'DM Sans', sans-serif;
-          font-size: 10px; font-weight: 500;
-          letter-spacing: 0.18em; text-transform: uppercase;
-          color: var(--color-text-soft); margin: 0 0 16px;
-        }
-        .art-toc-item {
-          display: flex; align-items: flex-start; gap: 10px;
-          padding: 8px 0; border-bottom: 1px solid rgba(104,80,68,0.06);
-          text-decoration: none; transition: padding-left 0.25s ease;
-        }
-        .art-toc-item:last-child { border-bottom: none; }
-        .art-toc-item:hover { padding-left: 4px; }
-        .art-toc-num {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 13px; font-weight: 600;
-          color: var(--color-accent-blue);
-          flex-shrink: 0; line-height: 1.4; width: 18px;
-        }
-        .art-toc-text {
-          font-family: 'DM Sans', sans-serif;
-          font-size: 12.5px; font-weight: 300;
-          color: var(--color-primary); line-height: 1.45; margin: 0;
-        }
-
-        /* Sidebar share card */
         .art-share-card {
           border-radius: 18px;
           border: 1px solid rgba(104,80,68,0.09);
@@ -444,6 +410,7 @@ export default async function BlogArticlePage({
           transition: background 0.25s ease;
         }
         .art-share-btn:hover { background: var(--color-bg-soft); }
+
         .art-share-icon {
           width: 22px; height: 22px; border-radius: 6px;
           display: flex; align-items: center; justify-content: center;
@@ -525,7 +492,6 @@ export default async function BlogArticlePage({
         .art-related-label::after { content: ''; flex: 1; height: 1px; background: rgba(104,80,68,0.09); }
       `}</style>
 
-      {/* ── 1. Article Hero ── */}
       <section className="art-hero">
         <div className="art-hero-orb1" />
         <div className="art-hero-orb2" />
@@ -533,7 +499,6 @@ export default async function BlogArticlePage({
 
         <Container>
           <div className="art-hero-inner">
-            {/* Breadcrumb */}
             <nav className="art-breadcrumb" aria-label="breadcrumb">
               <Link href="/">Home</Link>
               <span className="art-breadcrumb-sep">›</span>
@@ -542,7 +507,6 @@ export default async function BlogArticlePage({
               <span className="art-breadcrumb-current">{post.title}</span>
             </nav>
 
-            {/* Meta strip */}
             <div className="art-meta-strip">
               <span className="art-meta-cat">
                 {post.category_icon} {post.category}
@@ -553,11 +517,9 @@ export default async function BlogArticlePage({
               <span className="art-meta-text">{post.readTime} min read</span>
             </div>
 
-            {/* H1 */}
             <h1 className="art-h1">{post.title}</h1>
           </div>
 
-          {/* Cover image — uses actual image from DB if available */}
           <div className="art-cover">
             {post.cover_image ? (
               <img
@@ -579,15 +541,10 @@ export default async function BlogArticlePage({
         </Container>
       </section>
 
-      {/* ── 2. Article body + sidebar ── */}
       <section className="art-layout">
         <Container>
           <div className="art-layout-grid">
-
-            {/* ── Main prose ── */}
             <article className="art-prose">
-
-              {/* Excerpt as intro */}
               {post.excerpt && (
                 <div className="art-intro">
                   {post.excerpt.split("\n\n").map((para, i) => (
@@ -596,7 +553,6 @@ export default async function BlogArticlePage({
                 </div>
               )}
 
-              {/* Full content from CMS — rendered as HTML */}
               {post.content && (
                 <div
                   className="art-content"
@@ -604,7 +560,6 @@ export default async function BlogArticlePage({
                 />
               )}
 
-              {/* Internal links */}
               <div className="art-links-block">
                 <p className="art-links-title">Explore More</p>
                 {[
@@ -619,7 +574,6 @@ export default async function BlogArticlePage({
                 ))}
               </div>
 
-              {/* Article CTA */}
               <div className="art-cta">
                 <div className="art-cta-inner">
                   <p className="art-cta-eyebrow">Ready to take action?</p>
@@ -633,7 +587,6 @@ export default async function BlogArticlePage({
                 </div>
               </div>
 
-              {/* Author */}
               <div className="art-author">
                 <div className="art-author-avatar">
                   {post.author.name.charAt(0).toUpperCase()}
@@ -648,33 +601,47 @@ export default async function BlogArticlePage({
               </div>
             </article>
 
-            {/* ── Sidebar ── */}
             <aside className="art-sidebar">
-
-              {/* Share */}
               <div className="art-share-card">
                 <p className="art-share-title">Share This Article</p>
                 <div className="art-share-btns">
                   {[
                     {
                       label: "Share on LinkedIn",
-                      bg: "#0077B5", icon: "in",
-                      href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(`https://dhanamitra.com/blog/${post.slug}`)}`,
+                      bg: "#0077B5",
+                      icon: "in",
+                      href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(articleUrl)}`,
                     },
                     {
                       label: "Share on Twitter / X",
-                      bg: "#000", icon: "𝕏",
-                      href: `https://twitter.com/intent/tweet?url=${encodeURIComponent(`https://dhanamitra.com/blog/${post.slug}`)}&text=${encodeURIComponent(post.title)}`,
+                      bg: "#000",
+                      icon: "𝕏",
+                      href: `https://twitter.com/intent/tweet?url=${encodeURIComponent(articleUrl)}&text=${encodeURIComponent(post.title)}`,
                     },
                     {
                       label: "Share on WhatsApp",
-                      bg: "#25D366", icon: "W",
-                      href: `https://wa.me/?text=${encodeURIComponent(`${post.title} — https://dhanamitra.com/blog/${post.slug}`)}`,
+                      bg: "#25D366",
+                      icon: "W",
+                      href: `https://wa.me/?text=${encodeURIComponent(`${post.title} — ${articleUrl}`)}`,
                     },
                   ].map((s) => (
-                    <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className="art-share-btn">
-                      <span className="art-share-icon"
-                        style={{ background: s.bg, color: "white", fontSize: "11px", fontWeight: 600, borderRadius: 6 }}>
+                    <a
+                      key={s.label}
+                      href={s.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="art-share-btn"
+                    >
+                      <span
+                        className="art-share-icon"
+                        style={{
+                          background: s.bg,
+                          color: "white",
+                          fontSize: "11px",
+                          fontWeight: 600,
+                          borderRadius: 6,
+                        }}
+                      >
                         {s.icon}
                       </span>
                       {s.label}
@@ -683,27 +650,31 @@ export default async function BlogArticlePage({
                 </div>
               </div>
 
-              {/* Back to blog */}
-              <Link href="/blog" style={{
-                display: "flex", alignItems: "center", gap: "8px",
-                padding: "12px 16px", borderRadius: "12px",
-                border: "1px solid rgba(104,80,68,0.09)",
-                background: "rgba(255,255,255,0.55)",
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: "12.5px", fontWeight: 400,
-                color: "var(--color-primary)",
-                textDecoration: "none",
-                transition: "background 0.25s ease",
-              }}>
+              <Link
+                href="/blog"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding: "12px 16px",
+                  borderRadius: "12px",
+                  border: "1px solid rgba(104,80,68,0.09)",
+                  background: "rgba(255,255,255,0.55)",
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontSize: "12.5px",
+                  fontWeight: 400,
+                  color: "var(--color-primary)",
+                  textDecoration: "none",
+                  transition: "background 0.25s ease",
+                }}
+              >
                 ← Back to Blog
               </Link>
             </aside>
-
           </div>
         </Container>
       </section>
 
-      {/* ── 3. Related Articles ── */}
       {related.length > 0 && (
         <section className="art-related-section">
           <Container>
@@ -714,12 +685,25 @@ export default async function BlogArticlePage({
                   <div className="art-rel-top-bar" />
                   <div className="art-rel-img">
                     {rel.cover_image ? (
-                      <img src={rel.cover_image} alt={rel.title}
-                        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+                      <img
+                        src={rel.cover_image}
+                        alt={rel.title}
+                        style={{
+                          position: "absolute",
+                          inset: 0,
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
                     ) : (
                       <>
-                        <div className="art-rel-img-bg"
-                          style={{ background: `linear-gradient(145deg, ${rel.coverAccent}, rgba(255,250,247,0.45))` }} />
+                        <div
+                          className="art-rel-img-bg"
+                          style={{
+                            background: `linear-gradient(145deg, ${rel.coverAccent}, rgba(255,250,247,0.45))`,
+                          }}
+                        />
                         <div className="art-rel-img-grid" />
                       </>
                     )}
