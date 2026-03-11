@@ -9,6 +9,9 @@ const UPLOAD_DIR = join(process.cwd(), "public/uploads/settings");
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/gif", "image/webp", "image/svg+xml"];
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 
+function generateMediaKey() {
+  return `media_${Date.now()}`;
+}
 export async function POST(request: NextRequest) {
   const auth = await requireAdmin(request);
   if (!auth.ok) return auth.response;
@@ -16,7 +19,7 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const file = formData.get("file") as File;
-    const mediaKey = formData.get("mediaKey") as string;
+    const mediaKey = formData.get("mediaKey") as string || generateMediaKey();
 
     if (!file) {
       return NextResponse.json({ message: "No file provided" }, { status: 400 });

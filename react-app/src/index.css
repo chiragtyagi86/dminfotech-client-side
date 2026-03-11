@@ -1,0 +1,41 @@
+/* src/index.css */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; }
+
+:root {
+  --color-bg:           #fffaf7;
+  --color-bg-soft:      #f9f4f0;
+  --color-surface:      #ffffff;
+  --color-primary:      #3a405a;
+  --color-primary-2:    #685044;
+  --color-text-soft:    #6b6f7e;
+  --color-accent-blue:  #99b2dd;
+  --color-accent-blush: #e9afa3;
+  --color-btn-primary:      #3a405a;
+  --color-btn-primary-text: #ffffff;
+  --color-btn-accent:       #e9afa3;
+  --color-btn-accent-text:  #3a405a;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--color-bg);
+  color: var(--color-primary);
+  font-family: 'DM Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a { color: inherit; }
+img { max-width: 100%; display: block; }
+h1, h2, h3, h4 { margin: 0; }
+p { margin: 0; }
+button { cursor: pointer; }
+ul, ol { margin: 0; padding: 0; list-style: none; }
+
+/* Page top padding to clear fixed header */
+main { padding-top: 72px; }

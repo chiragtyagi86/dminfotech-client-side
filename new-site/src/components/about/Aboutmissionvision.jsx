@@ -1,13 +1,11 @@
-import Container from "@/app/components/common/Container";
-import SectionHeading from "@/app/components/common/SectionHeading";
+// src/components/about/AboutMissionVision.jsx
+import Container from "../common/Container";
+import SectionHeading from "../common/SectionHeading";
 
 export default function AboutMissionVision() {
   return (
-    
     <section className="about-mv">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap');
-
         .about-mv {
           padding: 96px 0;
           background: var(--color-bg);
@@ -18,12 +16,13 @@ export default function AboutMissionVision() {
         .about-mv::before {
           content: '';
           position: absolute;
-          top: 0; left: 0; right: 0;
+          top: 0;
+          left: 0;
+          right: 0;
           height: 1px;
           background: linear-gradient(90deg, transparent, rgba(104,80,68,0.10), transparent);
         }
 
-        /* Big decorative letter */
         .about-mv-deco {
           position: absolute;
           bottom: -60px;
@@ -65,25 +64,24 @@ export default function AboutMissionVision() {
           box-shadow: 0 20px 56px rgba(58,64,90,0.10);
         }
 
-        /* Mission: light card */
         .about-mv-mission {
           border: 1px solid rgba(104,80,68,0.10);
           background: rgba(255,255,255,0.65);
           backdrop-filter: blur(12px);
         }
 
-        /* Vision: dark card */
         .about-mv-vision {
           border: 1px solid rgba(249,222,201,0.08);
           background: var(--color-primary);
         }
 
-        /* Card corner accent */
         .about-mv-card::before {
           content: '';
           position: absolute;
-          top: 0; right: 0;
-          width: 120px; height: 120px;
+          top: 0;
+          right: 0;
+          width: 120px;
+          height: 120px;
           border-radius: 0 24px 0 120px;
           opacity: 0.08;
           transition: opacity 0.35s ease;
@@ -98,9 +96,10 @@ export default function AboutMissionVision() {
           opacity: 0.06;
         }
 
-        .about-mv-card:hover::before { opacity: 0.14; }
+        .about-mv-card:hover::before {
+          opacity: 0.14;
+        }
 
-        /* Label badge */
         .about-mv-badge {
           display: inline-flex;
           align-items: center;
@@ -121,23 +120,29 @@ export default function AboutMissionVision() {
         }
 
         .about-mv-badge-dot {
-          width: 24px; height: 24px;
+          width: 24px;
+          height: 24px;
           border-radius: 50%;
-          display: flex; align-items: center; justify-content: center;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           flex-shrink: 0;
         }
 
         .about-mv-mission .about-mv-badge-dot {
           background: var(--color-primary);
+          color: var(--color-surface, #fff);
         }
 
         .about-mv-vision .about-mv-badge-dot {
           background: rgba(249,222,201,0.20);
+          color: var(--color-surface, #fff);
         }
 
         .about-mv-badge-dot svg {
-          width: 12px; height: 12px;
-          stroke: var(--color-surface);
+          width: 12px;
+          height: 12px;
+          stroke: currentColor;
           stroke-width: 2;
           fill: none;
         }
@@ -158,7 +163,6 @@ export default function AboutMissionVision() {
           color: rgba(249,222,201,0.55);
         }
 
-        /* Card headline */
         .about-mv-card-title {
           font-family: 'Cormorant Garamond', serif;
           font-size: 32px;
@@ -172,7 +176,7 @@ export default function AboutMissionVision() {
         }
 
         .about-mv-vision .about-mv-card-title {
-          color: var(--color-surface);
+          color: var(--color-surface, rgba(255,250,247,0.95));
         }
 
         .about-mv-card-title em {
@@ -187,9 +191,9 @@ export default function AboutMissionVision() {
           color: var(--color-accent-blush);
         }
 
-        /* Divider */
         .about-mv-divider {
-          width: 40px; height: 1px;
+          width: 40px;
+          height: 1px;
           margin-bottom: 20px;
         }
 
@@ -201,7 +205,6 @@ export default function AboutMissionVision() {
           background: linear-gradient(90deg, rgba(249,222,201,0.30), transparent);
         }
 
-        /* Card body */
         .about-mv-card-body {
           font-family: 'DM Sans', sans-serif;
           font-size: 14.5px;
@@ -217,6 +220,35 @@ export default function AboutMissionVision() {
         .about-mv-vision .about-mv-card-body {
           color: rgba(249,222,201,0.62);
         }
+
+        @media (max-width: 767px) {
+          .about-mv {
+            padding: 80px 0;
+          }
+
+          .about-mv-grid {
+            margin-top: 48px;
+          }
+
+          .about-mv-card {
+            padding: 34px 24px;
+            border-radius: 20px;
+          }
+
+          .about-mv-card-title {
+            font-size: 26px;
+          }
+
+          .about-mv-card-body {
+            font-size: 14px;
+          }
+
+          .about-mv-deco {
+            font-size: 220px;
+            right: -35px;
+            bottom: -30px;
+          }
+        }
       `}</style>
 
       <div className="about-mv-deco">M</div>
@@ -229,18 +261,24 @@ export default function AboutMissionVision() {
         />
 
         <div className="about-mv-grid">
-          {/* Mission */}
           <div className="about-mv-card about-mv-mission">
             <div className="about-mv-badge">
               <span className="about-mv-badge-dot">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"/></svg>
+                <svg viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="4" fill="currentColor" stroke="none" />
+                </svg>
               </span>
               <span className="about-mv-badge-label">Our Mission</span>
             </div>
+
             <h3 className="about-mv-card-title">
-              Deliver digital solutions that<br /><em>genuinely move businesses forward</em>
+              Deliver digital solutions that
+              <br />
+              <em>genuinely move businesses forward</em>
             </h3>
+
             <div className="about-mv-divider" />
+
             <p className="about-mv-card-body">
               To provide modern businesses with the websites, software, talent and knowledge
               they need to operate effectively, appear credibly and grow consistently in
@@ -249,18 +287,24 @@ export default function AboutMissionVision() {
             </p>
           </div>
 
-          {/* Vision */}
           <div className="about-mv-card about-mv-vision">
             <div className="about-mv-badge">
               <span className="about-mv-badge-dot">
-                <svg viewBox="0 0 24 24"><path d="M12 2l3 7h7l-6 4 2 7-6-4-6 4 2-7-6-4h7z" strokeLinejoin="round"/></svg>
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 2l3 7h7l-6 4 2 7-6-4-6 4 2-7-6-4h7z" strokeLinejoin="round" />
+                </svg>
               </span>
               <span className="about-mv-badge-label">Our Vision</span>
             </div>
+
             <h3 className="about-mv-card-title">
-              To be the <em>most trusted</em> digital partner<br />for businesses across India
+              To be the <em>most trusted</em> digital partner
+              <br />
+              for businesses across India
             </h3>
+
             <div className="about-mv-divider" />
+
             <p className="about-mv-card-body">
               We are building toward a future where every business — regardless of size
               or sector — has access to premium-quality digital infrastructure, expert
