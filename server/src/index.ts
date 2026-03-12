@@ -25,7 +25,7 @@ app.use(
 // ── CORS — allow React frontend ───────────────────────────────────────────────
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin: process.env.CLIENT_URL || "https://dmifotech.com",
     credentials: true,
   })
 );

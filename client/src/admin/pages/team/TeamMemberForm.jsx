@@ -1,5 +1,5 @@
 // pages/team/TeamMemberForm.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function TeamMemberForm({
   initialData,
@@ -27,8 +27,29 @@ export default function TeamMemberForm({
   const [signaturePreview, setSignaturePreview] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  const photoInputRef = useRef(null);
+  const signatureInputRef = useRef(null);
+
   useEffect(() => {
-    if (!initialData) return;
+    if (!initialData) {
+      setFormData({
+        name: "",
+        position: "",
+        bio: "",
+        shortDesc: "",
+        email: "",
+        phone: "",
+        linkedinUrl: "",
+        twitterUrl: "",
+        websiteUrl: "",
+        resumeUrl: "",
+      });
+      setPhotoPreview("");
+      setSignaturePreview("");
+      setPhotoFile(null);
+      setSignatureFile(null);
+      return;
+    }
 
     setFormData({
       name: initialData.name || "",
@@ -44,9 +65,12 @@ export default function TeamMemberForm({
     });
 
     setPhotoPreview(initialData.photoUrl || initialData.photo_url || "");
-    setSignaturePreview(initialData.signature || "");
+    setSignaturePreview(initialData.signatureUrl || initialData.signature || "");
     setPhotoFile(null);
     setSignatureFile(null);
+
+    if (photoInputRef.current) photoInputRef.current.value = "";
+    if (signatureInputRef.current) signatureInputRef.current.value = "";
   }, [initialData]);
 
   function updateField(key, value) {
@@ -79,6 +103,18 @@ export default function TeamMemberForm({
     reader.readAsDataURL(file);
   }
 
+  function clearPhoto() {
+    setPhotoFile(null);
+    setPhotoPreview("");
+    if (photoInputRef.current) photoInputRef.current.value = "";
+  }
+
+  function clearSignature() {
+    setSignatureFile(null);
+    setSignaturePreview("");
+    if (signatureInputRef.current) signatureInputRef.current.value = "";
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
 
@@ -89,7 +125,16 @@ export default function TeamMemberForm({
 
     try {
       setSubmitting(true);
-      await onSubmit(formData, photoFile || undefined, signatureFile || undefined);
+
+      await onSubmit(
+        {
+          ...formData,
+          name: formData.name.trim(),
+          position: formData.position.trim(),
+        },
+        photoFile || undefined,
+        signatureFile || undefined
+      );
     } catch (err) {
       console.error("Form submission error:", err);
       alert(err?.message || "Failed to save team member");
@@ -208,10 +253,30 @@ export default function TeamMemberForm({
           cursor: pointer;
           transition: background 0.2s ease;
           border: none;
+          margin-right: 8px;
         }
 
         .photo-btn:hover {
           background: rgba(153,178,221,0.25);
+        }
+
+        .photo-remove-btn {
+          display: inline-block;
+          padding: 10px 20px;
+          border-radius: 9px;
+          background: rgba(192, 57, 43, 0.10);
+          color: #a93226;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 12px;
+          font-weight: 500;
+          text-transform: uppercase;
+          cursor: pointer;
+          transition: background 0.2s ease;
+          border: none;
+        }
+
+        .photo-remove-btn:hover {
+          background: rgba(192, 57, 43, 0.16);
         }
 
         .photo-preview {
@@ -319,15 +384,26 @@ export default function TeamMemberForm({
             <label className="form-label">Photo</label>
             <div className="photo-upload">
               <input
+                ref={photoInputRef}
                 type="file"
-                id="photo-input"
+                id="team-photo-input"
                 className="photo-input"
                 accept="image/*"
                 onChange={handlePhotoSelect}
               />
-              <label htmlFor="photo-input" className="photo-btn">
+              <label htmlFor="team-photo-input" className="photo-btn">
                 Choose Photo
               </label>
+
+              {photoPreview && (
+                <button
+                  type="button"
+                  className="photo-remove-btn"
+                  onClick={clearPhoto}
+                >
+                  Remove
+                </button>
+              )}
 
               {photoPreview && (
                 <div className="photo-preview">
@@ -430,15 +506,26 @@ export default function TeamMemberForm({
           <label className="form-label">Signature Image</label>
           <div className="photo-upload">
             <input
+              ref={signatureInputRef}
               type="file"
-              id="signature-input"
+              id="team-signature-input"
               className="photo-input"
               accept="image/*"
               onChange={handleSignatureSelect}
             />
-            <label htmlFor="signature-input" className="photo-btn">
+            <label htmlFor="team-signature-input" className="photo-btn">
               Choose Signature
             </label>
+
+            {signaturePreview && (
+              <button
+                type="button"
+                className="photo-remove-btn"
+                onClick={clearSignature}
+              >
+                Remove
+              </button>
+            )}
 
             {signaturePreview && (
               <div className="photo-preview">

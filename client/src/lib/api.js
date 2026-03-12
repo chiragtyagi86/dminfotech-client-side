@@ -2,10 +2,15 @@
 const BASE = import.meta.env.VITE_API_URL || "";
 
 async function apiFetch(path, options = {}) {
+  const isFormData = options.body instanceof FormData;
+
   const res = await fetch(`${BASE}/api${path}`, {
     credentials: "include",
-    headers: { "Content-Type": "application/json", ...options.headers },
     ...options,
+    headers: {
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
+      ...(options.headers || {}),
+    },
   });
 
   if (!res.ok) {
@@ -26,6 +31,7 @@ export const api = {
   getCategoryPostCounts: () => apiFetch("/blog/category-counts"),
 
   getPublicSettings: () => apiFetch("/settings/public"),
+
   // Portfolio
   getPortfolioItems: () => apiFetch("/portfolio"),
   getPortfolioItem: (slug) => apiFetch(`/portfolio/${slug}`),
@@ -53,20 +59,11 @@ export const api = {
     apiFetch("/leads", { method: "POST", body: JSON.stringify(data) }),
 
   // Job application
-  applyJob: async (formData) => {
-    const res = await fetch(`${BASE}/api/careers/apply`, {
+  applyJob: (formData) =>
+    apiFetch("/careers/apply", {
       method: "POST",
-      credentials: "include",
       body: formData,
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || `API error ${res.status}`);
-    }
-
-    return res.json();
-  },
+    }),
 };
 
 export const adminApi = {
@@ -120,31 +117,28 @@ export const adminApi = {
   deleteLead: (id) =>
     apiFetch(`/admin/leads/${id}`, { method: "DELETE" }),
 
-  // Team
-  getTeam: (params = {}) => apiFetch(`/admin/team?${new URLSearchParams(params)}`),
-  getTeamMember: (id) => apiFetch(`/admin/team/${id}`),
-  createTeamMember: (data) =>
-    apiFetch("/admin/team", { method: "POST", body: JSON.stringify(data) }),
-
-  updateTeamMember: async (id, fd) => {
-    const res = await fetch(`${BASE}/api/admin/team/${id}`, {
-      method: "PUT",
-      credentials: "include",
-      body: fd,
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || `API error ${res.status}`);
-    }
-
-    return res.json();
-  },
-
-  deleteTeamMember: (id) =>
-    apiFetch(`/admin/team/${id}`, { method: "DELETE" }),
+  // Team,
 
   // Testimonials
+ // Team
+getTeam: (params = {}) => apiFetch(`/admin/team?${new URLSearchParams(params)}`),
+getTeamMember: (id) => apiFetch(`/admin/team/${id}`),
+
+createTeamMember: (fd) =>
+  apiFetch("/admin/team", {
+    method: "POST",
+    body: fd,
+  }),
+
+updateTeamMember: (id, fd) =>
+  apiFetch(`/admin/team/${id}`, {
+    method: "PUT",
+    body: fd,
+  }),
+
+deleteTeamMember: (id) =>
+  apiFetch(`/admin/team/${id}`, { method: "DELETE" }),
+ 
   getTestimonials: (params = {}) =>
     apiFetch(`/admin/testimonials?${new URLSearchParams(params)}`),
   getTestimonial: (id) =>
@@ -152,20 +146,11 @@ export const adminApi = {
   createTestimonial: (data) =>
     apiFetch("/admin/testimonials", { method: "POST", body: JSON.stringify(data) }),
 
-  updateTestimonial: async (id, fd) => {
-    const res = await fetch(`${BASE}/api/admin/testimonials/${id}`, {
+  updateTestimonial: (id, fd) =>
+    apiFetch(`/admin/testimonials/${id}`, {
       method: "PUT",
-      credentials: "include",
       body: fd,
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || `API error ${res.status}`);
-    }
-
-    return res.json();
-  },
+    }),
 
   deleteTestimonial: (id) =>
     apiFetch(`/admin/testimonials/${id}`, { method: "DELETE" }),
@@ -192,20 +177,11 @@ export const adminApi = {
   deletePortfolioItem: (slug) =>
     apiFetch(`/admin/portfolio/${slug}`, { method: "DELETE" }),
 
-  uploadPortfolioImage: async (fd) => {
-    const res = await fetch(`${BASE}/api/admin/portfolio/upload`, {
+  uploadPortfolioImage: (fd) =>
+    apiFetch("/admin/portfolio/upload", {
       method: "POST",
-      credentials: "include",
       body: fd,
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || `API error ${res.status}`);
-    }
-
-    return res.json();
-  },
+    }),
 
   // Services
   getServices: () => apiFetch("/admin/services"),
@@ -229,20 +205,11 @@ export const adminApi = {
   updateSettings: (data) =>
     apiFetch("/admin/settings", { method: "PUT", body: JSON.stringify(data) }),
 
-  uploadMedia: async (fd) => {
-    const res = await fetch(`${BASE}/api/admin/settings/media`, {
+  uploadMedia: (fd) =>
+    apiFetch("/admin/settings/media", {
       method: "POST",
-      credentials: "include",
       body: fd,
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || `API error ${res.status}`);
-    }
-
-    return res.json();
-  },
+    }),
 
   deleteMedia: (key) =>
     apiFetch(`/admin/settings/media/${key}`, { method: "DELETE" }),
