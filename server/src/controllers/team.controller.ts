@@ -46,11 +46,23 @@ export async function adminGetTeamMember(req: Request, res: Response): Promise<v
 
 export async function adminCreateTeamMember(req: Request, res: Response): Promise<void> {
   try {
-    const result = await teamService.createTeamMember(req.body);
-    res.status(201).json({ success: true, message: "Team member created successfully", ...result });
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
+    const photoFile = files?.photo?.[0];
+    const signatureFile = files?.signature?.[0];
+
+    const result = await teamService.createTeamMember(req.body, photoFile, signatureFile);
+
+    res.status(201).json({
+      success: true,
+      message: "Team member created successfully",
+      ...result,
+    });
   } catch (err: any) {
     console.error("[team/adminCreateTeamMember]", err);
-    res.status(err.status || 500).json({ success: false, message: err.message || "Failed to create team member" });
+    res.status(err.status || 500).json({
+      success: false,
+      message: err.message || "Failed to create team member",
+    });
   }
 }
 

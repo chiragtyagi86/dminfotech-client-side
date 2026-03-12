@@ -1,16 +1,17 @@
-// src/routes/services.routes.ts
 import { Router } from "express";
 import { requireAdmin } from "../middleware/auth";
-import * as svc from "../controllers/siteServices.controller";
+import * as services from "../controllers/siteServices.controller";
 
-const router = Router();
+export const servicesPublicRoutes = Router();
+export const servicesAdminRoutes = Router();
+
 // Public
-router.get("/",       svc.getServices);
-router.get("/:slug",  svc.getServiceBySlug);
+servicesPublicRoutes.get("/", services.getServices);
+servicesPublicRoutes.get("/:slug", services.getServiceBySlug);
+
 // Admin
-router.get   ("/",       requireAdmin, svc.adminGetServices);
-router.post  ("/",       requireAdmin, svc.adminCreateService);
-router.get   ("/:slug",  requireAdmin, svc.adminGetServiceBySlug);
-router.put   ("/:slug",  requireAdmin, svc.adminUpdateService);
-router.delete("/:slug",  requireAdmin, svc.adminDeleteService);
-export default router;
+servicesAdminRoutes.get("/", requireAdmin, services.adminGetServices);
+servicesAdminRoutes.post("/", requireAdmin, services.adminCreateService);
+servicesAdminRoutes.get("/:slug", requireAdmin, services.adminGetServiceBySlug);
+servicesAdminRoutes.put("/:slug", requireAdmin, services.adminUpdateService);
+servicesAdminRoutes.delete("/:slug", requireAdmin, services.adminDeleteService);

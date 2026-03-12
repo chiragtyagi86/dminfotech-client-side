@@ -159,7 +159,7 @@ export async function uploadMedia(mediaKey: string | null | undefined, file: Exp
     key === "logo"    ? "logo"    :
     key === "favicon" ? "favicon" : "social_image";
 
-  const publicPath = `./uploads/settings/${file.filename}`;
+  const publicPath = `/uploads/settings/${file.filename}`;
 
   await db.query(
     `INSERT INTO site_media (media_key, file_name, file_path, file_type, file_size, media_type)

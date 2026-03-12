@@ -10,6 +10,14 @@ export async function adminGetSeo(_req: Request, res: Response): Promise<void> {
   catch (err) { console.error("[seo/adminGetSeo]", err); res.status(500).json({ message: "Server error." }); }
 }
 
+export async function publicGetSettings(_req: Request, res: Response): Promise<void> {
+  try {
+    res.json({ data: await seoService.getAdminSettings() });
+  } catch (err) {
+    console.error("[settings/publicGetSettings]", err);
+    res.status(500).json({ message: "Server error." });
+  }
+}
 export async function adminUpdateGlobalSeo(req: Request, res: Response): Promise<void> {
   try {
     await seoService.updateGlobalSeo(req.body);

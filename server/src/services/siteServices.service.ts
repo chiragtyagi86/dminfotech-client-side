@@ -56,21 +56,53 @@ export async function getAdminServiceBySlug(slug: string) {
 
 export async function createService(body: any): Promise<{ id: number; slug: string }> {
   const title = body.title || "";
-  if (!title.trim()) throw Object.assign(new Error("Title is required."), { status: 400 });
+  if (!title.trim()) {
+    throw Object.assign(new Error("Title is required."), { status: 400 });
+  }
 
   let slug = body.slug?.trim() ? slugify(body.slug) : slugify(title);
-  const [existing] = await db.query<any[]>("SELECT id FROM services WHERE slug = ?", [slug]);
-  if ((existing as any[]).length) slug = `${slug}-${Date.now()}`;
 
-  const status = body.status === "active" ? "published" : (body.status || "published");
+  const [existing] = await db.query<any[]>(
+    "SELECT id FROM services WHERE slug = ?",
+    [slug]
+  );
+
+  if ((existing as any[]).length) {
+    slug = `${slug}-${Date.now()}`;
+  }
+
+  const status =
+    body.status === "published" || body.status === "active" || body.published === true
+      ? "published"
+      : "draft";
+
+  let contentValue: string;
+  if (typeof body.content === "string" && body.content.trim().startsWith("{")) {
+    contentValue = body.content;
+  } else if (typeof body.content === "object" && body.content !== null) {
+    contentValue = JSON.stringify(body.content);
+  } else {
+    contentValue = buildContent(body);
+  }
+
   const [result] = await db.query<any>(
     `INSERT INTO services
      (title, slug, short_desc, content, icon, image, sort_order, status, meta_title, meta_description)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [title.trim(), slug, body.desc || body.short_desc || "", buildContent(body),
-     body.icon || "", body.image || "", body.order || body.sort_order || 1,
-     status, body.seoTitle || body.meta_title || "", body.seoDescription || body.meta_description || ""]
+    [
+      title.trim(),
+      slug,
+      body.desc || body.short_desc || "",
+      contentValue,
+      body.icon || "",
+      body.image || "",
+      body.order || body.sort_order || 1,
+      status,
+      body.seoTitle || body.meta_title || "",
+      body.seoDescription || body.meta_description || "",
+    ]
   );
+
   return { id: result.insertId, slug };
 }
 
