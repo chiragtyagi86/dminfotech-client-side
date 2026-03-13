@@ -10,69 +10,53 @@ export default function Hero() {
           position: relative;
           overflow: hidden;
           padding: 120px 0 100px;
-          background: var(--color-bg);
+          background:
+            radial-gradient(circle at 10% 10%, rgba(153, 178, 221, 0.14), transparent 30%),
+            radial-gradient(circle at 90% 20%, rgba(233, 175, 163, 0.12), transparent 28%),
+            radial-gradient(circle at 50% 85%, rgba(249, 222, 201, 0.14), transparent 24%),
+            var(--color-bg);
         }
 
         .hero-orb {
           position: absolute;
           border-radius: 50%;
-          filter: blur(90px);
           pointer-events: none;
-          animation: heroFloat 12s ease-in-out infinite;
+          opacity: 0.6;
         }
 
         .hero-orb-1 {
-          width: 560px;
-          height: 560px;
-          top: -180px;
-          left: -120px;
-          background: radial-gradient(circle, rgba(153, 178, 221, 0.28) 0%, transparent 70%);
-          animation-delay: 0s;
+          width: 320px;
+          height: 320px;
+          top: -80px;
+          left: -60px;
+          background: radial-gradient(circle, rgba(153, 178, 221, 0.18) 0%, transparent 70%);
         }
 
         .hero-orb-2 {
-          width: 420px;
-          height: 420px;
+          width: 260px;
+          height: 260px;
           top: 40px;
-          right: -100px;
-          background: radial-gradient(circle, rgba(233, 175, 163, 0.22) 0%, transparent 70%);
-          animation-delay: -4s;
+          right: -50px;
+          background: radial-gradient(circle, rgba(233, 175, 163, 0.16) 0%, transparent 70%);
         }
 
         .hero-orb-3 {
-          width: 300px;
-          height: 300px;
-          bottom: -60px;
-          left: 40%;
-          background: radial-gradient(circle, rgba(249, 222, 201, 0.35) 0%, transparent 70%);
-          animation-delay: -8s;
-        }
-
-        @keyframes heroFloat {
-          0%, 100% { transform: translateY(0px) scale(1); }
-          50% { transform: translateY(-30px) scale(1.05); }
-        }
-
-        .hero-section::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-          pointer-events: none;
-          z-index: 0;
-          opacity: 0.55;
+          width: 220px;
+          height: 220px;
+          bottom: -40px;
+          left: 42%;
+          background: radial-gradient(circle, rgba(249, 222, 201, 0.18) 0%, transparent 70%);
         }
 
         .hero-grid {
           position: absolute;
           inset: 0;
           background-image:
-            linear-gradient(rgba(58, 64, 90, 0.04) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(58, 64, 90, 0.04) 1px, transparent 1px);
+            linear-gradient(rgba(58, 64, 90, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(58, 64, 90, 0.03) 1px, transparent 1px);
           background-size: 64px 64px;
-          mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 30%, transparent 100%);
-          -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 30%, transparent 100%);
           pointer-events: none;
+          opacity: 0.45;
         }
 
         .hero-content {
@@ -94,12 +78,11 @@ export default function Hero() {
           gap: 10px;
           padding: 6px 18px 6px 8px;
           border-radius: 100px;
-          border: 1px solid rgba(104, 80, 68, 0.15);
-          background: rgba(255, 255, 255, 0.65);
-          backdrop-filter: blur(8px);
+          border: 1px solid rgba(104, 80, 68, 0.12);
+          background: rgba(255, 255, 255, 0.88);
           margin-bottom: 32px;
-          animation: heroFadeUp 0.7s cubic-bezier(0.4, 0, 0.2, 1) both;
-          box-shadow: 0 12px 32px rgba(58, 64, 90, 0.07);
+          animation: heroFadeUp 0.6s ease both;
+          box-shadow: 0 8px 24px rgba(58, 64, 90, 0.05);
         }
 
         .eyebrow-dot {
@@ -120,12 +103,6 @@ export default function Hero() {
           height: 7px;
           border-radius: 50%;
           background: var(--color-surface, #fff);
-          animation: eyebrowPulse 2.5s ease infinite;
-        }
-
-        @keyframes eyebrowPulse {
-          0%, 100% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.4); opacity: 0.7; }
         }
 
         .eyebrow-text {
@@ -145,7 +122,7 @@ export default function Hero() {
           letter-spacing: -0.01em;
           color: var(--color-primary);
           margin: 0 0 8px;
-          animation: heroFadeUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.1s both;
+          animation: heroFadeUp 0.7s ease 0.08s both;
         }
 
         .hero-headline em {
@@ -171,7 +148,7 @@ export default function Hero() {
           background: linear-gradient(90deg, var(--color-accent-blue), var(--color-accent-blush));
           border-radius: 2px;
           transform-origin: left;
-          animation: lineGrow 1s cubic-bezier(0.4, 0, 0.2, 1) 0.9s both;
+          animation: lineGrow 0.8s ease 0.5s both;
         }
 
         @keyframes lineGrow {
@@ -186,7 +163,7 @@ export default function Hero() {
           gap: 12px;
           margin: 28px auto 0;
           width: fit-content;
-          animation: heroFadeUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.35s both;
+          animation: heroFadeUp 0.7s ease 0.16s both;
         }
 
         .ornament-line {
@@ -215,7 +192,7 @@ export default function Hero() {
           color: var(--color-text-soft);
           max-width: 650px;
           margin: 24px auto 0;
-          animation: heroFadeUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both;
+          animation: heroFadeUp 0.7s ease 0.12s both;
         }
 
         .hero-cta {
@@ -225,7 +202,7 @@ export default function Hero() {
           gap: 14px;
           margin-top: 44px;
           flex-wrap: wrap;
-          animation: heroFadeUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both;
+          animation: heroFadeUp 0.7s ease 0.2s both;
         }
 
         .hero-btn-primary,
@@ -243,30 +220,29 @@ export default function Hero() {
           letter-spacing: 0.09em;
           text-transform: uppercase;
           text-decoration: none;
-          transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+          transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
         }
 
         .hero-btn-primary {
           background: var(--color-primary);
           color: #fff;
-          box-shadow: 0 12px 30px rgba(58, 64, 90, 0.16);
+          box-shadow: 0 10px 22px rgba(58, 64, 90, 0.12);
         }
 
         .hero-btn-primary:hover {
           transform: translateY(-2px);
-          box-shadow: 0 14px 36px rgba(58, 64, 90, 0.24);
+          box-shadow: 0 14px 28px rgba(58, 64, 90, 0.16);
         }
 
         .hero-btn-secondary {
-          background: rgba(255, 255, 255, 0.68);
+          background: #fff;
           color: var(--color-primary);
-          border: 1px solid rgba(104, 80, 68, 0.18);
-          backdrop-filter: blur(8px);
+          border: 1px solid rgba(104, 80, 68, 0.16);
         }
 
         .hero-btn-secondary:hover {
-          background: rgba(104, 80, 68, 0.06);
-          border-color: rgba(104, 80, 68, 0.35);
+          background: rgba(104, 80, 68, 0.05);
+          border-color: rgba(104, 80, 68, 0.28);
           transform: translateY(-2px);
         }
 
@@ -276,34 +252,33 @@ export default function Hero() {
           gap: 18px;
           max-width: 820px;
           margin: 64px auto 0;
-          animation: heroFadeUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.45s both;
+          animation: heroFadeUp 0.7s ease 0.24s both;
         }
 
         .stat-card {
           position: relative;
           border-radius: 18px;
           border: 1px solid rgba(104, 80, 68, 0.10);
-          background: rgba(255, 255, 255, 0.62);
-          backdrop-filter: blur(12px);
+          background: rgba(255, 255, 255, 0.9);
           padding: 24px 20px;
           text-align: center;
           overflow: hidden;
-          transition: transform 0.3s ease, box-shadow 0.3s ease;
-          box-shadow: 0 12px 32px rgba(58, 64, 90, 0.07);
+          transition: transform 0.25s ease, box-shadow 0.25s ease;
+          box-shadow: 0 10px 24px rgba(58, 64, 90, 0.05);
         }
 
         .stat-card::before {
           content: '';
           position: absolute;
           inset: 0;
-          background: linear-gradient(135deg, rgba(153, 178, 221, 0.12) 0%, transparent 55%);
+          background: linear-gradient(135deg, rgba(153, 178, 221, 0.08) 0%, transparent 55%);
           opacity: 0;
-          transition: opacity 0.35s ease;
+          transition: opacity 0.25s ease;
         }
 
         .stat-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 16px 48px rgba(58, 64, 90, 0.10);
+          transform: translateY(-3px);
+          box-shadow: 0 14px 30px rgba(58, 64, 90, 0.08);
         }
 
         .stat-card:hover::before {
@@ -340,7 +315,7 @@ export default function Hero() {
         }
 
         @keyframes heroFadeUp {
-          from { opacity: 0; transform: translateY(22px); }
+          from { opacity: 0; transform: translateY(18px); }
           to { opacity: 1; transform: translateY(0); }
         }
 
@@ -380,22 +355,40 @@ export default function Hero() {
           }
 
           .hero-orb-1 {
-            width: 360px;
-            height: 360px;
-            top: -120px;
-            left: -100px;
+            width: 220px;
+            height: 220px;
+            top: -50px;
+            left: -40px;
           }
 
           .hero-orb-2 {
-            width: 280px;
-            height: 280px;
-            right: -80px;
+            width: 180px;
+            height: 180px;
+            right: -40px;
           }
 
           .hero-orb-3 {
-            width: 220px;
-            height: 220px;
+            width: 160px;
+            height: 160px;
             left: 30%;
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .hero-eyebrow,
+          .hero-headline,
+          .hero-headline strong::after,
+          .hero-ornament,
+          .hero-sub,
+          .hero-cta,
+          .hero-stats {
+            animation: none !important;
+          }
+
+          .hero-btn-primary,
+          .hero-btn-secondary,
+          .stat-card {
+            transition: none !important;
           }
         }
       `}</style>
