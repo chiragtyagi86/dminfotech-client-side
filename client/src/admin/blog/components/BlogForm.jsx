@@ -1,23 +1,28 @@
 // src/admin/blog/components/BlogForm.jsx
 import { useState, useEffect } from "react";
+import { api } from "../../../lib/api";
 
 function slugify(str) {
-  return str.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  return str
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
 }
 
 function normalizeFormData(initialData) {
-  if (!initialData) return {
-    title: "",
-    slug: "",
-    excerpt: "",
-    content: "",
-    category: "",
-    tags: "",
-    featuredImage: "",
-    published: false,
-    metaTitle: "",
-    metaDescription: "",
-  };
+  if (!initialData)
+    return {
+      title: "",
+      slug: "",
+      excerpt: "",
+      content: "",
+      category: "",
+      tags: "",
+      featuredImage: "",
+      published: false,
+      metaTitle: "",
+      metaDescription: "",
+    };
 
   let tags = initialData.tags ?? initialData.tag ?? "";
   if (Array.isArray(tags)) tags = tags.join(", ");
@@ -27,7 +32,11 @@ function normalizeFormData(initialData) {
     slug: initialData.slug ?? "",
     excerpt: initialData.excerpt ?? initialData.short_desc ?? "",
     content: initialData.content ?? initialData.body ?? "",
-    category: initialData.category ?? "",
+    category:
+      initialData.category_id ??
+      initialData.category?.id ??
+      initialData.category ??
+      "",
     tags,
     featuredImage:
       initialData.featuredImage ??
@@ -40,7 +49,8 @@ function normalizeFormData(initialData) {
         ? initialData.published
         : initialData.status === "published" || initialData.status === "active",
     metaTitle: initialData.metaTitle ?? initialData.meta_title ?? "",
-    metaDescription: initialData.metaDescription ?? initialData.meta_description ?? "",
+    metaDescription:
+      initialData.metaDescription ?? initialData.meta_description ?? "",
   };
 }
 
@@ -49,9 +59,26 @@ export default function BlogForm({ initialData, onSubmit, isSaving }) {
 
   const [form, setForm] = useState(normalizeFormData(initialData));
   const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(normalizeFormData(initialData).featuredImage);
+  const [imagePreview, setImagePreview] = useState(
+    normalizeFormData(initialData).featuredImage
+  );
+  const [categories, setCategories] = useState([]);
   const [slugManual, setSlugManual] = useState(isEdit);
   const [tab, setTab] = useState("content");
+
+  useEffect(() => {
+    async function loadCategories() {
+      try {
+        const res = await api.getCategories();
+        setCategories(Array.isArray(res) ? res : res?.data || []);
+      } catch (err) {
+        console.error("Failed to load categories:", err);
+        setCategories([]);
+      }
+    }
+
+    loadCategories();
+  }, []);
 
   useEffect(() => {
     const normalized = normalizeFormData(initialData);
@@ -81,7 +108,10 @@ export default function BlogForm({ initialData, onSubmit, isSaving }) {
     e.preventDefault();
 
     const tagsArray = form.tags
-      ? form.tags.split(",").map((t) => t.trim()).filter(Boolean)
+      ? form.tags
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean)
       : [];
 
     const payload = {
@@ -89,7 +119,7 @@ export default function BlogForm({ initialData, onSubmit, isSaving }) {
       slug: form.slug,
       excerpt: form.excerpt,
       content: form.content,
-      category: form.category,
+      category_id: form.category || null,
       tags: tagsArray,
       cover_image: form.featuredImage,
       featured_image: form.featuredImage,
@@ -104,9 +134,37 @@ export default function BlogForm({ initialData, onSubmit, isSaving }) {
     onSubmit(payload);
   }
 
-  const inp = { fontFamily:"'DM Sans',sans-serif", fontSize:14, fontWeight:300, color:"#3a405a", padding:"11px 14px", borderRadius:10, border:"1px solid rgba(104,80,68,0.14)", background:"#fdfaf8", width:"100%", outline:"none", boxSizing:"border-box" };
-  const lbl = { fontFamily:"'DM Sans',sans-serif", fontSize:10.5, fontWeight:500, letterSpacing:"0.13em", textTransform:"uppercase", color:"rgba(104,80,68,0.55)", display:"block", marginBottom:6 };
-  const field = { display:"flex", flexDirection:"column", gap:4, marginBottom:18 };
+  const inp = {
+    fontFamily: "'DM Sans',sans-serif",
+    fontSize: 14,
+    fontWeight: 300,
+    color: "#3a405a",
+    padding: "11px 14px",
+    borderRadius: 10,
+    border: "1px solid rgba(104,80,68,0.14)",
+    background: "#fdfaf8",
+    width: "100%",
+    outline: "none",
+    boxSizing: "border-box",
+  };
+
+  const lbl = {
+    fontFamily: "'DM Sans',sans-serif",
+    fontSize: 10.5,
+    fontWeight: 500,
+    letterSpacing: "0.13em",
+    textTransform: "uppercase",
+    color: "rgba(104,80,68,0.55)",
+    display: "block",
+    marginBottom: 6,
+  };
+
+  const field = {
+    display: "flex",
+    flexDirection: "column",
+    gap: 4,
+    marginBottom: 18,
+  };
 
   return (
     <form onSubmit={handleSubmit}>
@@ -129,8 +187,13 @@ export default function BlogForm({ initialData, onSubmit, isSaving }) {
       `}</style>
 
       <div className="bf-tabs">
-        {["content","seo"].map((t) => (
-          <button key={t} type="button" className={`bf-tab${tab===t?" active":""}`} onClick={() => setTab(t)}>
+        {["content", "seo"].map((t) => (
+          <button
+            key={t}
+            type="button"
+            className={`bf-tab${tab === t ? " active" : ""}`}
+            onClick={() => setTab(t)}
+          >
             {t === "content" ? "Content" : "SEO"}
           </button>
         ))}
@@ -140,53 +203,128 @@ export default function BlogForm({ initialData, onSubmit, isSaving }) {
         <>
           <div style={field}>
             <label style={lbl}>Title</label>
-            <input style={inp} value={form.title} onChange={(e) => set("title", e.target.value)} required placeholder="Post title" />
+            <input
+              style={inp}
+              value={form.title}
+              onChange={(e) => set("title", e.target.value)}
+              required
+              placeholder="Post title"
+            />
           </div>
 
           <div style={field}>
             <label style={lbl}>Slug</label>
-            <input style={inp} value={form.slug} onChange={(e) => { setSlugManual(true); set("slug", e.target.value); }} placeholder="post-url-slug" />
+            <input
+              style={inp}
+              value={form.slug}
+              onChange={(e) => {
+                setSlugManual(true);
+                set("slug", e.target.value);
+              }}
+              placeholder="post-url-slug"
+            />
           </div>
 
           <div className="bf-row2">
             <div style={field}>
               <label style={lbl}>Category</label>
-              <input style={inp} value={form.category} onChange={(e) => set("category", e.target.value)} placeholder="e.g. Finance" />
+              <select
+                style={inp}
+                value={form.category}
+                onChange={(e) => set("category", e.target.value)}
+              >
+                <option value="">Select Category</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.icon ? `${cat.icon} ` : ""}
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
             </div>
+
             <div style={field}>
               <label style={lbl}>Tags (comma-separated)</label>
-              <input style={inp} value={form.tags} onChange={(e) => set("tags", e.target.value)} placeholder="tag1, tag2" />
+              <input
+                style={inp}
+                value={form.tags}
+                onChange={(e) => set("tags", e.target.value)}
+                placeholder="tag1, tag2"
+              />
             </div>
           </div>
 
           <div style={field}>
             <label style={lbl}>Excerpt</label>
-            <textarea style={{...inp, minHeight:80, resize:"vertical"}} value={form.excerpt} onChange={(e) => set("excerpt", e.target.value)} placeholder="Short summary…" />
+            <textarea
+              style={{ ...inp, minHeight: 80, resize: "vertical" }}
+              value={form.excerpt}
+              onChange={(e) => set("excerpt", e.target.value)}
+              placeholder="Short summary…"
+            />
           </div>
 
           <div style={field}>
             <label style={lbl}>Content (Markdown / HTML)</label>
-            <textarea style={{...inp, minHeight:260, resize:"vertical", fontFamily:"monospace", fontSize:13}} value={form.content} onChange={(e) => set("content", e.target.value)} placeholder="Write your post here…" />
+            <textarea
+              style={{
+                ...inp,
+                minHeight: 260,
+                resize: "vertical",
+                fontFamily: "monospace",
+                fontSize: 13,
+              }}
+              value={form.content}
+              onChange={(e) => set("content", e.target.value)}
+              placeholder="Write your post here…"
+            />
           </div>
 
           <div style={field}>
             <label style={lbl}>Featured Image</label>
-            <input type="file" accept="image/*" onChange={handleImage} style={{fontFamily:"'DM Sans',sans-serif",fontSize:13}} />
-            {imagePreview && <img src={imagePreview} alt="preview" className="bf-img-preview" />}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImage}
+              style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 13 }}
+            />
+            {imagePreview && (
+              <img
+                src={imagePreview}
+                alt="preview"
+                className="bf-img-preview"
+              />
+            )}
             {!imageFile && form.featuredImage && (
-              <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:"rgba(104,80,68,0.45)",marginTop:4}}>
+              <span
+                style={{
+                  fontFamily: "'DM Sans',sans-serif",
+                  fontSize: 11,
+                  color: "rgba(104,80,68,0.45)",
+                  marginTop: 4,
+                }}
+              >
                 Current: {form.featuredImage.split("/").pop()}
               </span>
             )}
           </div>
 
-          <div style={{...field, marginBottom:24}}>
+          <div style={{ ...field, marginBottom: 24 }}>
             <label style={lbl}>Published</label>
             <div className="bf-toggle">
-              <div className={`bf-toggle-track${form.published?" on":""}`} onClick={() => set("published", !form.published)}>
+              <div
+                className={`bf-toggle-track${form.published ? " on" : ""}`}
+                onClick={() => set("published", !form.published)}
+              >
                 <div className="bf-toggle-thumb" />
               </div>
-              <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"rgba(104,80,68,0.60)"}}>
+              <span
+                style={{
+                  fontFamily: "'DM Sans',sans-serif",
+                  fontSize: 13,
+                  color: "rgba(104,80,68,0.60)",
+                }}
+              >
                 {form.published ? "Published" : "Draft"}
               </span>
             </div>
@@ -198,22 +336,92 @@ export default function BlogForm({ initialData, onSubmit, isSaving }) {
         <>
           <div style={field}>
             <label style={lbl}>Meta Title</label>
-            <input style={inp} value={form.metaTitle} onChange={(e) => set("metaTitle", e.target.value)} placeholder="SEO title (leave blank to use post title)" />
+            <input
+              style={inp}
+              value={form.metaTitle}
+              onChange={(e) => set("metaTitle", e.target.value)}
+              placeholder="SEO title (leave blank to use post title)"
+            />
           </div>
+
           <div style={field}>
             <label style={lbl}>Meta Description</label>
-            <textarea style={{...inp, minHeight:100, resize:"vertical"}} value={form.metaDescription} onChange={(e) => set("metaDescription", e.target.value)} placeholder="Brief description for search engines…" />
+            <textarea
+              style={{ ...inp, minHeight: 100, resize: "vertical" }}
+              value={form.metaDescription}
+              onChange={(e) => set("metaDescription", e.target.value)}
+              placeholder="Brief description for search engines…"
+            />
           </div>
-          <div style={{padding:"16px", borderRadius:10, background:"rgba(153,178,221,0.08)", border:"1px solid rgba(153,178,221,0.18)", marginBottom:24}}>
-            <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,fontWeight:500,letterSpacing:"0.12em",textTransform:"uppercase",color:"rgba(104,80,68,0.40)",margin:"0 0 8px"}}>Preview</p>
-            <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:16,fontWeight:500,color:"#1a0dab",margin:"0 0 2px"}}>{form.metaTitle || form.title || "Post Title"}</p>
-            <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:"#006621",margin:"0 0 4px"}}>/blog/{form.slug || "post-slug"}</p>
-            <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:300,color:"#545454",margin:0}}>{form.metaDescription || form.excerpt || "Meta description will appear here."}</p>
+
+          <div
+            style={{
+              padding: "16px",
+              borderRadius: 10,
+              background: "rgba(153,178,221,0.08)",
+              border: "1px solid rgba(153,178,221,0.18)",
+              marginBottom: 24,
+            }}
+          >
+            <p
+              style={{
+                fontFamily: "'DM Sans',sans-serif",
+                fontSize: 10,
+                fontWeight: 500,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: "rgba(104,80,68,0.40)",
+                margin: "0 0 8px",
+              }}
+            >
+              Preview
+            </p>
+            <p
+              style={{
+                fontFamily: "'DM Sans',sans-serif",
+                fontSize: 16,
+                fontWeight: 500,
+                color: "#1a0dab",
+                margin: "0 0 2px",
+              }}
+            >
+              {form.metaTitle || form.title || "Post Title"}
+            </p>
+            <p
+              style={{
+                fontFamily: "'DM Sans',sans-serif",
+                fontSize: 12,
+                color: "#006621",
+                margin: "0 0 4px",
+              }}
+            >
+              /blog/{form.slug || "post-slug"}
+            </p>
+            <p
+              style={{
+                fontFamily: "'DM Sans',sans-serif",
+                fontSize: 13,
+                fontWeight: 300,
+                color: "#545454",
+                margin: 0,
+              }}
+            >
+              {form.metaDescription ||
+                form.excerpt ||
+                "Meta description will appear here."}
+            </p>
           </div>
         </>
       )}
 
-      <div style={{display:"flex",justifyContent:"flex-end",paddingTop:8,borderTop:"1px solid rgba(104,80,68,0.07)"}}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          paddingTop: 8,
+          borderTop: "1px solid rgba(104,80,68,0.07)",
+        }}
+      >
         <button type="submit" className="bf-save" disabled={isSaving}>
           {isSaving ? "Saving…" : isEdit ? "Update Post" : "Create Post"}
         </button>

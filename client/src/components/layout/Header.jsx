@@ -1,9 +1,10 @@
 // src/components/layout/Header.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import Container from "../common/Container";
 import { useSiteConfig } from "../../context/SiteConfigContext";
-function ChevronRightIcon({ size = 14, strokeWidth = 1.5, style = {} }) {
+
+function ChevronRightIcon({ size = 14, strokeWidth = 1.5, style = {}, className = "" }) {
   return (
     <svg
       width={size}
@@ -15,6 +16,7 @@ function ChevronRightIcon({ size = 14, strokeWidth = 1.5, style = {} }) {
       strokeLinecap="round"
       strokeLinejoin="round"
       style={style}
+      className={className}
       aria-hidden="true"
     >
       <path d="m9 18 6-6-6-6" />
@@ -65,17 +67,37 @@ export default function Header() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
-  const {siteConfig} = useSiteConfig();
+  const { siteConfig } = useSiteConfig();
+
+  const ticking = useRef(false);
+  const lastScrolled = useRef(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    const updateScrollState = () => {
+      const next = window.scrollY > 20;
+      if (next !== lastScrolled.current) {
+        lastScrolled.current = next;
+        setScrolled(next);
+      }
+      ticking.current = false;
+    };
+
+    const onScroll = () => {
+      if (!ticking.current) {
+        ticking.current = true;
+        window.requestAnimationFrame(updateScrollState);
+      }
+    };
+
+    updateScrollState();
     window.addEventListener("scroll", onScroll, { passive: true });
+
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   useEffect(() => {
     const onResize = () => {
-      if (window.innerWidth >= 903) setOpen(false);
+      if (window.innerWidth >= 930) setOpen(false);
     };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
@@ -85,30 +107,34 @@ export default function Header() {
     setOpen(false);
   }, [location.pathname]);
 
+  const isHome = location.pathname === "/";
+
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap');
-
         .header-root {
           position: sticky;
           top: 0;
           z-index: 80;
           width: 100%;
-          transition: all 0.35s ease;
         }
 
         .header-glass {
-          background: rgba(255, 250, 247, 0.88);
-          backdrop-filter: blur(18px) saturate(170%);
-          -webkit-backdrop-filter: blur(18px) saturate(170%);
+          background: rgba(255, 250, 247, 0.92);
           border-bottom: 1px solid rgba(104, 80, 68, 0.10);
-          transition: background 0.35s ease, box-shadow 0.35s ease;
+          transition: background 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
         }
 
         .header-glass.scrolled {
-          background: rgba(255, 250, 247, 0.96);
-          box-shadow: 0 6px 28px rgba(58, 64, 90, 0.08);
+          background: rgba(255, 250, 247, 0.97);
+          box-shadow: 0 6px 20px rgba(58, 64, 90, 0.08);
+        }
+
+        @supports ((-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px))) {
+          .header-glass {
+            backdrop-filter: blur(10px) saturate(130%);
+            -webkit-backdrop-filter: blur(10px) saturate(130%);
+          }
         }
 
         .header-topbar {
@@ -121,7 +147,7 @@ export default function Header() {
             rgba(104, 80, 68, 0.18) 80%,
             transparent 100%
           );
-          transition: opacity 0.3s ease;
+          transition: opacity 0.2s ease;
         }
 
         .header-topbar.hidden-bar {
@@ -134,7 +160,7 @@ export default function Header() {
           justify-content: space-between;
           gap: 20px;
           min-height: 96px;
-          transition: min-height 0.35s ease;
+          transition: min-height 0.25s ease;
           font-family: 'DM Sans', sans-serif;
         }
 
@@ -155,7 +181,7 @@ export default function Header() {
           width: auto;
           height: auto;
           max-height: 88px;
-          transition: max-height 0.35s ease, transform 0.3s ease;
+          transition: max-height 0.25s ease, transform 0.2s ease;
           display: block;
         }
 
@@ -208,7 +234,7 @@ export default function Header() {
           color: var(--color-text);
           text-decoration: none;
           padding: 4px 0;
-          transition: color 0.3s ease;
+          transition: color 0.25s ease;
           white-space: nowrap;
         }
 
@@ -224,7 +250,7 @@ export default function Header() {
             var(--color-accent-blue),
             var(--color-accent-blush)
           );
-          transition: width 0.35s ease;
+          transition: width 0.25s ease;
         }
 
         .nav-link:hover {
@@ -275,34 +301,17 @@ export default function Header() {
           text-decoration: none;
           overflow: hidden;
           white-space: nowrap;
-          transition: transform 0.3s ease, box-shadow 0.3s ease;
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
           flex-shrink: 0;
-        }
-
-        .cta-btn::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(
-            135deg,
-            rgba(153,178,221,0.18) 0%,
-            transparent 60%
-          );
-          opacity: 0;
-          transition: opacity 0.3s ease;
-        }
-
-        .cta-btn:hover::before {
-          opacity: 1;
         }
 
         .cta-btn:hover {
           transform: translateY(-1px);
-          box-shadow: 0 8px 24px rgba(58, 64, 90, 0.20);
+          box-shadow: 0 8px 20px rgba(58, 64, 90, 0.18);
         }
 
         .cta-chevron {
-          transition: transform 0.28s ease;
+          transition: transform 0.22s ease;
         }
 
         .cta-btn:hover .cta-chevron {
@@ -317,11 +326,12 @@ export default function Header() {
           height: 42px;
           border-radius: 6px;
           border: 1px solid var(--color-border, rgba(104,80,68,0.12));
-          background: rgba(255,255,255,0.55);
+          background: rgba(255,255,255,0.82);
           cursor: pointer;
           color: var(--color-text);
           transition: background 0.2s ease, transform 0.2s ease;
           flex-shrink: 0;
+          -webkit-tap-highlight-color: transparent;
         }
 
         .menu-btn:hover {
@@ -333,7 +343,7 @@ export default function Header() {
           overflow: hidden;
           max-height: 0;
           opacity: 0;
-          transition: max-height 0.42s ease, opacity 0.28s ease;
+          transition: max-height 0.28s ease, opacity 0.2s ease;
           border-top: 1px solid rgba(104, 80, 68, 0.08);
           background: rgba(255, 250, 247, 0.98);
         }
@@ -363,7 +373,7 @@ export default function Header() {
           color: var(--color-text);
           text-decoration: none;
           border-bottom: 1px solid rgba(104, 80, 68, 0.07);
-          transition: color 0.25s ease, padding-left 0.25s ease;
+          transition: color 0.2s ease, padding-left 0.2s ease;
         }
 
         .mobile-nav-link:hover,
@@ -389,7 +399,7 @@ export default function Header() {
           text-transform: uppercase;
           text-decoration: none;
           width: 100%;
-          transition: opacity 0.25s ease;
+          transition: opacity 0.2s ease;
         }
 
         .mobile-cta:hover {
@@ -397,58 +407,21 @@ export default function Header() {
         }
 
         @media (max-width: 1199px) {
-          .desktop-nav {
-            gap: 18px;
-          }
-
-          .nav-link {
-            font-size: 13px;
-          }
-
-          .cta-btn {
-            padding: 10px 15px;
-            font-size: 11.5px;
-          }
-
-          .logo-tagline {
-            max-width: 128px;
-            font-size: 11px;
-          }
+          .desktop-nav { gap: 18px; }
+          .nav-link { font-size: 13px; }
+          .cta-btn { padding: 10px 15px; font-size: 11.5px; }
+          .logo-tagline { max-width: 128px; font-size: 11px; }
         }
 
         @media (max-width: 1031px) {
-          .header-inner {
-            min-height: 88px;
-          }
-
-          .header-inner.scrolled {
-            min-height: 76px;
-          }
-
-          .logo-image {
-            max-height: 78px;
-          }
-
-          .header-inner.scrolled .logo-image {
-            max-height: 60px;
-          }
-
-          .logo-divider {
-            height: 34px;
-          }
-
-          .logo-tagline {
-            font-size: 10px;
-            max-width: 110px;
-          }
-
-          .desktop-nav {
-            gap: 14px;
-          }
-
-          .nav-link {
-            font-size: 12.5px;
-          }
+          .header-inner { min-height: 88px; }
+          .header-inner.scrolled { min-height: 76px; }
+          .logo-image { max-height: 78px; }
+          .header-inner.scrolled .logo-image { max-height: 60px; }
+          .logo-divider { height: 34px; }
+          .logo-tagline { font-size: 10px; max-width: 110px; }
+          .desktop-nav { gap: 14px; }
+          .nav-link { font-size: 12.5px; }
         }
 
         @media (max-width: 930px) {
@@ -483,49 +456,45 @@ export default function Header() {
             max-height: 68px;
           }
 
-          .logo-divider {
+          .logo-divider,
+          .logo-tagline {
             display: none;
           }
 
-          .logo-tagline {
-            display: none;
+          .header-glass,
+          .header-glass.scrolled {
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            background: rgba(255, 250, 247, 0.98);
+            box-shadow: none;
           }
         }
 
         @media (max-width: 480px) {
-          .header-inner {
-            min-height: 74px;
+          .header-inner { min-height: 74px; }
+          .header-inner.scrolled { min-height: 66px; }
+          .logo-image { max-height: 52px; }
+          .header-inner.scrolled .logo-image { max-height: 46px; }
+          .menu-btn { width: 40px; height: 40px; }
+          .mobile-drawer-inner { padding: 10px 0 18px; }
+          .mobile-nav-link { padding: 13px 0; font-size: 13.5px; }
+        }
+
+        /* Extra optimization for home page on slower mobile devices */
+        @media (max-width: 930px) {
+          .header-root.home-mobile .header-topbar {
+            display: none;
           }
 
-          .header-inner.scrolled {
-            min-height: 66px;
-          }
-
-          .logo-image {
-            max-height: 52px;
-          }
-
-          .header-inner.scrolled .logo-image {
-            max-height: 46px;
-          }
-
-          .menu-btn {
-            width: 40px;
-            height: 40px;
-          }
-
-          .mobile-drawer-inner {
-            padding: 10px 0 18px;
-          }
-
-          .mobile-nav-link {
-            padding: 13px 0;
-            font-size: 13.5px;
+          .header-root.home-mobile .header-glass,
+          .header-root.home-mobile .header-glass.scrolled {
+            background: #fffaf7;
+            border-bottom: 1px solid rgba(104, 80, 68, 0.08);
           }
         }
       `}</style>
 
-      <header className="header-root">
+      <header className={`header-root${isHome ? " home-mobile" : ""}`}>
         <div className={`header-topbar${scrolled ? " hidden-bar" : ""}`} />
 
         <div className={`header-glass${scrolled ? " scrolled" : ""}`}>
@@ -538,6 +507,8 @@ export default function Header() {
                   width="260"
                   height="78"
                   className="logo-image"
+                  loading="eager"
+                  decoding="async"
                 />
                 <div className="logo-divider" />
                 <span className="logo-tagline">{siteConfig.siteTagline}</span>
@@ -549,9 +520,7 @@ export default function Header() {
                     {i > 0 && <span className="nav-sep" />}
                     <Link
                       to={link.href}
-                      className={`nav-link${
-                        location.pathname === link.href ? " active" : ""
-                      }`}
+                      className={`nav-link${location.pathname === link.href ? " active" : ""}`}
                     >
                       {link.label}
                     </Link>
@@ -568,16 +537,12 @@ export default function Header() {
 
               <button
                 className="menu-btn"
-                onClick={() => setOpen(!open)}
+                onClick={() => setOpen((v) => !v)}
                 aria-label="Toggle navigation"
                 aria-expanded={open}
                 type="button"
               >
-                {open ? (
-                  <XIcon size={18} strokeWidth={1.5} />
-                ) : (
-                  <MenuIcon size={18} strokeWidth={1.5} />
-                )}
+                {open ? <XIcon size={18} strokeWidth={1.5} /> : <MenuIcon size={18} strokeWidth={1.5} />}
               </button>
             </div>
           </Container>
@@ -589,9 +554,7 @@ export default function Header() {
                   <Link
                     key={link.href}
                     to={link.href}
-                    className={`mobile-nav-link${
-                      location.pathname === link.href ? " active" : ""
-                    }`}
+                    className={`mobile-nav-link${location.pathname === link.href ? " active" : ""}`}
                     onClick={() => setOpen(false)}
                   >
                     {link.label}

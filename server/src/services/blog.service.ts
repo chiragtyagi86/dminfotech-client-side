@@ -38,25 +38,25 @@ function calcReadTime(content: string): number {
 
 function formatPost(row: any): BlogPost {
   return {
-    id:               row.id,
-    title:            row.title         ?? "",
-    slug:             row.slug          ?? "",
-    excerpt:          row.excerpt       ?? "",
-    content:          row.content       ?? "",
-    cover_image:      row.cover_image   ?? "",
-    status:           row.status,
-    published_at:     row.published_at  ?? "",
-    meta_title:       row.meta_title    ?? row.title ?? "",
+    id: row.id,
+    title: row.title ?? "",
+    slug: row.slug ?? "",
+    excerpt: row.excerpt ?? "",
+    content: row.content ?? "",
+    cover_image: row.cover_image ?? "",
+    status: row.status,
+    published_at: row.published_at ?? "",
+    meta_title: row.meta_title ?? row.title ?? "",
     meta_description: row.meta_description ?? row.excerpt ?? "",
-    og_image:         row.og_image      ?? "",
-    created_at:       row.created_at    ?? "",
-    updated_at:       row.updated_at    ?? "",
-    category:         row.category_name  ?? "General",
-    category_slug:    row.category_slug  ?? "general",
-    category_color:   row.category_color ?? "#3a405a",
-    category_icon:    row.category_icon  ?? "📝",
-    readTime:   calcReadTime(row.content),
-    tags:       row.tags ? (row.tags as string).split(",").map((t: string) => t.trim()) : [],
+    og_image: row.og_image ?? "",
+    created_at: row.created_at ?? "",
+    updated_at: row.updated_at ?? "",
+    category: row.category_name ?? "General",
+    category_slug: row.category_slug ?? "general",
+    category_color: row.category_color ?? "#3a405a",
+    category_icon: row.category_icon ?? "📝",
+    readTime: calcReadTime(row.content),
+    tags: row.tags ? (row.tags as string).split(",").map((t: string) => t.trim()) : [],
     coverAccent: row.category_color ? `${row.category_color}33` : "rgba(153,178,221,0.20)",
     author: {
       name: row.author_name ?? "Dhanamitra Team",
@@ -135,7 +135,7 @@ export async function getAdminPosts(
 ) {
   const offset = (page - 1) * limit;
   const conditions: string[] = [];
-  const params: unknown[]    = [];
+  const params: unknown[] = [];
 
   if (search) { conditions.push("(title LIKE ? OR excerpt LIKE ?)"); params.push(`%${search}%`, `%${search}%`); }
   if (status) { conditions.push("status = ?"); params.push(status); }
@@ -147,7 +147,7 @@ export async function getAdminPosts(
 
   const [rows] = await db.query<any[]>(
     `SELECT id, title, slug, excerpt, cover_image, status, published_at,
-            meta_title, meta_description, created_at, updated_at
+            meta_title, meta_description, created_at, updated_at, category_id
      FROM blog_posts ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
     [...params, limit, offset]
   );
@@ -163,14 +163,15 @@ export async function getAdminPostBySlug(slug: string) {
 }
 
 export async function createPost(body: any): Promise<{ id: number; slug: string }> {
-  const title            = body.title            || "";
-  const excerpt          = body.excerpt          || "";
-  const content          = body.content          || "";
-  const status           = body.status           || "draft";
-  const cover_image      = body.featuredImage    || body.cover_image      || "";
-  const meta_title       = body.seoTitle         || body.meta_title       || "";
-  const meta_description = body.seoDescription   || body.meta_description || "";
-  const og_image         = body.ogImage          || body.og_image         || "";
+  const title = body.title || "";
+  const excerpt = body.excerpt || "";
+  const content = body.content || "";
+  const status = body.status || "draft";
+  const cover_image = body.featuredImage || body.cover_image || "";
+  const category_id = body.category_id || null;
+  const meta_title = body.seoTitle || body.meta_title || "";
+  const meta_description = body.seoDescription || body.meta_description || "";
+  const og_image = body.ogImage || body.og_image || "";
 
   if (!title.trim()) throw Object.assign(new Error("Title is required."), { status: 400 });
 
@@ -184,8 +185,8 @@ export async function createPost(body: any): Promise<{ id: number; slug: string 
 
   const [result] = await db.query<any>(
     `INSERT INTO blog_posts (title, slug, excerpt, content, cover_image, status, published_at,
-                             meta_title, meta_description, og_image)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                             meta_title, meta_description, og_image, category_id)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [title.trim(), slug, excerpt, content, cover_image, status, published_at, meta_title, meta_description, og_image]
   );
 
@@ -197,14 +198,15 @@ export async function updatePost(slug: string, body: any): Promise<{ slug: strin
   if (!(existing as any[]).length) throw Object.assign(new Error("Post not found."), { status: 404 });
 
   const post = (existing as any[])[0];
-  const title            = body.title            || "";
-  const excerpt          = body.excerpt          ?? "";
-  const content          = body.content          ?? "";
-  const status           = body.status           || post.status;
-  const cover_image      = body.featuredImage    || body.cover_image      || "";
-  const meta_title       = body.seoTitle         || body.meta_title       || "";
-  const meta_description = body.seoDescription   || body.meta_description || "";
-  const og_image         = body.ogImage          || body.og_image         || "";
+  const title = body.title || "";
+  const excerpt = body.excerpt ?? "";
+  const content = body.content ?? "";
+  const status = body.status || post.status;
+  const category_id = body.category_id || post.category_id                  ;
+  const cover_image = body.featuredImage || body.cover_image || "";
+  const meta_title = body.seoTitle || body.meta_title || "";
+  const meta_description = body.seoDescription || body.meta_description || "";
+  const og_image = body.ogImage || body.og_image || "";
 
   if (!title.trim()) throw Object.assign(new Error("Title is required."), { status: 400 });
 
@@ -220,10 +222,10 @@ export async function updatePost(slug: string, body: any): Promise<{ slug: strin
   }
 
   await db.query(
-    `UPDATE blog_posts SET title=?, slug=?, excerpt=?, content=?, cover_image=?, status=?,
+    `UPDATE blog_posts SET title=?, slug=?, excerpt=?, content=?, cover_image=?, status=?,category_id=?,
                            published_at=?, meta_title=?, meta_description=?, og_image=?
      WHERE id=?`,
-    [title.trim(), newSlug, excerpt, content, cover_image, status, published_at, meta_title, meta_description, og_image, post.id]
+    [title.trim(), newSlug, excerpt, content, cover_image, status, category_id, published_at, meta_title, meta_description, og_image, post.id]
   );
 
   return { slug: newSlug };

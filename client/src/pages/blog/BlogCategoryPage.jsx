@@ -90,7 +90,7 @@ export default function BlogCategoryPage() {
               <Link to="/blog" className="catpage-filter-btn">All Posts</Link>
               {(cats || []).map(cat => (
                 <Link key={cat.slug} to={`/blog/category/${cat.slug}`} className={`catpage-filter-btn${cat.slug === slug ? " active" : ""}`}>
-                  {cat.icon} {cat.name} <span className="catpage-filter-count">({(counts || {})[cat.slug] || 0})</span>
+ {cat.name} <span className="catpage-filter-count">({(counts || {})[cat.slug] || 0})</span>
                 </Link>
               ))}
             </div>

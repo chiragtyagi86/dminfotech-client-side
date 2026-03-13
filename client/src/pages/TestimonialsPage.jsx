@@ -220,7 +220,7 @@ function TestimonialCard({ t, large }) {
         <div
           
         >
-          <img style={{
+          {t.clientimg ? (<img style={{
             width: 40,
             height: 40,
             borderRadius: "50%",
@@ -234,7 +234,26 @@ function TestimonialCard({ t, large }) {
             fontWeight: 600,
             color: "white",
             flexShrink: 0,
-          }} src={`${import.meta.env.VITE_API_URL}${t.clientimg}`} alt={t.clientName} />
+          }} src={`${import.meta.env.VITE_API_URL}${t.clientimg}`} alt={t.clientName} />):(
+            <div style={{
+            width: 40,
+            height: 40,
+            borderRadius: "50%",
+            background:
+              "linear-gradient(135deg, var(--color-accent-blue), var(--color-accent-blush))",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontFamily: "'Cormorant Garamond', serif",
+            fontSize: 18,
+            fontWeight: 600,
+            color: "white",
+            flexShrink: 0,
+          }}>
+      {getInitial(t.clientName)}
+    </div>
+          )}
+          
         </div>
 
         <div>

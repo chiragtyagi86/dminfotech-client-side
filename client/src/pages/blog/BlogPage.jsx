@@ -104,8 +104,7 @@ export default function BlogPage() {
             <div className="blog-filter-inner">
               <Link to="/blog" className="blog-filter-btn active">All Posts <span className="blog-filter-count">({allPosts.length})</span></Link>
               {(cats||[]).map(cat => (
-                <Link key={cat.slug} to={`/blog/category/${cat.slug}`} className="blog-filter-btn">
-                  {cat.icon} {cat.name} <span className="blog-filter-count">({(counts||{})[cat.slug]||0})</span>
+                <Link key={cat.slug} to={`/blog/category/${cat.slug}`} className="blog-filter-btn"> {cat.name} <span className="blog-filter-count">({(counts||{})[cat.slug]||0})</span>
                 </Link>
               ))}
             </div>
