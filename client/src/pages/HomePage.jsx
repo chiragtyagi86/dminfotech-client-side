@@ -1,7 +1,7 @@
 // src/pages/HomePage.jsx
 import Hero from "../components/home/Hero";
 import TrustBar from "../components/home/TrustBar";
-import ServicesPreview from "../components/home/Servicespreview";
+import ServicesPreview from "../components/home/ServicesPreview";
 import WhyChooseUs from "../components/home/WhyChooseUs";
 import PortfolioPreview from "../components/home/Portfoliopreview";
 import TestimonialsPreview from "../components/home/Testimonialspreview";
