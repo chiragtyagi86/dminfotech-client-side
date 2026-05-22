@@ -37,7 +37,7 @@ export async function getAdminPages(page: number, limit: number, search: string)
 
 export async function getPublicPages() {
   const [rows] = await db.query<any[]>(
-    `SELECT slug, title, description FROM pages WHERE is_published = true ORDER BY slug ASC`
+    `SELECT slug, title, description FROM pages WHERE is_published = true AND slug NOT IN ('home', 'about', 'contact') ORDER BY slug ASC`
   );
 
   return (rows as any[]).map((p) => ({

@@ -82,9 +82,12 @@ export function SiteConfigProvider({ children }) {
           ? settingsResult.value?.data ?? settingsResult.value ?? {}
           : {};
 
-        const cmsPages = pagesResult.status === "fulfilled"
-          ? pagesResult.value ?? []
-          : [];
+        let cmsPages = [];
+        if (pagesResult.status === "fulfilled") {
+          const pagesData = pagesResult.value ?? [];
+          // Handle both array and wrapped response
+          cmsPages = Array.isArray(pagesData) ? pagesData : (pagesData.data ?? []);
+        }
 
         if (!mounted) return;
 
@@ -93,6 +96,9 @@ export function SiteConfigProvider({ children }) {
         if (settingsResult.status === "rejected") {
           console.error("Failed to load public site settings:", settingsResult.reason);
           setError(settingsResult.reason?.message || "Failed to load site settings.");
+        }
+        if (pagesResult.status === "rejected") {
+          console.error("Failed to load CMS pages:", pagesResult.reason);
         }
       } catch (err) {
         console.error("Failed to load public site settings:", err);
