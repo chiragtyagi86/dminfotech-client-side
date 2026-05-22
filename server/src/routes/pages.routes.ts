@@ -7,16 +7,16 @@ import { Router } from "express";
 import { requireAdmin } from "../middleware/auth";
 import * as pages from "../controllers/pages.controller";
 
-const router = Router();
+export const pagesPublicRoutes = Router();
+export const pagesAdminRoutes = Router();
 
 // ── Public ────────────────────────────────────────────────────────────────────
-router.get("/:slug", pages.publicGetPage);
+pagesPublicRoutes.get("/", pages.publicGetPages);
+pagesPublicRoutes.get("/:slug", pages.publicGetPage);
 
 // ── Admin ─────────────────────────────────────────────────────────────────────
-router.get   ("/",        requireAdmin, pages.adminGetPages);
-router.post  ("/",        requireAdmin, pages.adminCreatePage);
-router.get   ("/:slug",   requireAdmin, pages.adminGetPageBySlug);
-router.put   ("/:slug",   requireAdmin, pages.adminUpdatePage);
-router.delete("/:slug",   requireAdmin, pages.adminDeletePage);
-
-export default router;
+pagesAdminRoutes.get   ("/",        requireAdmin, pages.adminGetPages);
+pagesAdminRoutes.post  ("/",        requireAdmin, pages.adminCreatePage);
+pagesAdminRoutes.get   ("/:slug",   requireAdmin, pages.adminGetPageBySlug);
+pagesAdminRoutes.put   ("/:slug",   requireAdmin, pages.adminUpdatePage);
+pagesAdminRoutes.delete("/:slug", requireAdmin, pages.adminDeletePage);

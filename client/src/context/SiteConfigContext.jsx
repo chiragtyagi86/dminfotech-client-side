@@ -16,9 +16,13 @@ function buildAbsoluteMediaUrl(path) {
   return `${base}${path}`;
 }
 
-function mergeSiteConfig(fallback, payload = {}) {
+function mergeSiteConfig(fallback, payload = {}, cmsPages = []) {
   const settings = payload.settings || {};
   const media = payload.media || {};
+
+  const publicPages = Array.isArray(cmsPages)
+    ? cmsPages.filter((page) => page && page.href && page.label)
+    : [];
 
   return {
     ...fallback,
@@ -50,6 +54,7 @@ function mergeSiteConfig(fallback, payload = {}) {
       buildAbsoluteMediaUrl(media.favicon?.filePath) || fallback.favicon || "",
 
     navLinks: fallback.navLinks,
+    cmsPages: publicPages,
     shortName: fallback.shortName,
     url: fallback.url,
   };
@@ -68,12 +73,27 @@ export function SiteConfigProvider({ children }) {
         setLoading(true);
         setError("");
 
-        const res = await api.getPublicSettings();
-        const payload = res?.data ?? res ?? {};
+        const [settingsResult, pagesResult] = await Promise.allSettled([
+          api.getPublicSettings(),
+          api.getPages(),
+        ]);
+
+        const payload = settingsResult.status === "fulfilled"
+          ? settingsResult.value?.data ?? settingsResult.value ?? {}
+          : {};
+
+        const cmsPages = pagesResult.status === "fulfilled"
+          ? pagesResult.value ?? []
+          : [];
 
         if (!mounted) return;
 
-        setSiteConfig(mergeSiteConfig(siteConfigFallback, payload));
+        setSiteConfig(mergeSiteConfig(siteConfigFallback, payload, cmsPages));
+
+        if (settingsResult.status === "rejected") {
+          console.error("Failed to load public site settings:", settingsResult.reason);
+          setError(settingsResult.reason?.message || "Failed to load site settings.");
+        }
       } catch (err) {
         console.error("Failed to load public site settings:", err);
 

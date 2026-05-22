@@ -5,6 +5,16 @@ import * as pagesService from "../services/pages.service";
 
 // ── Public ────────────────────────────────────────────────────────────────────
 
+export async function publicGetPages(req: Request, res: Response): Promise<void> {
+  try {
+    const pages = await pagesService.getPublicPages();
+    res.json(pages);
+  } catch (err: any) {
+    console.error("[pages/publicGetPages]", err);
+    res.status(err.status || 500).json({ message: err.message || "Server error." });
+  }
+}
+
 export async function publicGetPage(req: Request, res: Response): Promise<void> {
   try {
     const page = await pagesService.getPageBySlug(req.params.slug);

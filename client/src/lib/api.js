@@ -52,6 +52,7 @@ export const api = {
   getJob: (slug) => apiFetch(`/careers/jobs/${slug}`),
 
   // Pages
+  getPages: () => apiFetch(`/pages`),
   getPage: (slug) => apiFetch(`/pages/${slug}`),
 
   // Leads

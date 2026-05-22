@@ -35,6 +35,19 @@ export async function getAdminPages(page: number, limit: number, search: string)
   };
 }
 
+export async function getPublicPages() {
+  const [rows] = await db.query<any[]>(
+    `SELECT slug, title, description FROM pages WHERE is_published = true ORDER BY slug ASC`
+  );
+
+  return (rows as any[]).map((p) => ({
+    slug: p.slug,
+    label: p.title || p.slug,
+    description: p.description || "",
+    href: `/${p.slug}`,
+  }));
+}
+
 export async function getPageBySlug(slug: string) {
   const [rows] = await db.query<any[]>(
     `SELECT id, slug, title, description, content, is_published FROM pages WHERE slug = ?`, [slug]

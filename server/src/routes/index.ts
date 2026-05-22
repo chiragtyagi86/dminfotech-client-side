@@ -4,10 +4,12 @@ import authRoutes from "./auth.routes";
 import blogRoutes from "./blog.routes";
 import careersRoutes from "./careers.routes";
 import leadsRoutes from "./leads.routes";
-import { teamPublicRoutes, teamAdminRoutes } from "./team.routes";import testimonialsRoutes from "./testimonials.routes";
-import pagesRoutes from "./pages.routes";
+import { teamPublicRoutes, teamAdminRoutes } from "./team.routes";
+import testimonialsRoutes from "./testimonials.routes";
+import { pagesPublicRoutes, pagesAdminRoutes } from "./pages.routes";
 import { portfolioPublicRoutes, portfolioAdminRoutes } from "./portfolio.routes";
-import { servicesPublicRoutes, servicesAdminRoutes } from "./services.routes";import seoRoutes from "./seo.routes";
+import { servicesPublicRoutes, servicesAdminRoutes } from "./services.routes";
+import seoRoutes from "./seo.routes";
 import {
   settingsPublicRoutes,
   settingsAdminRoutes
@@ -26,7 +28,7 @@ router.use("/team", teamPublicRoutes);
 router.use("/settings", settingsPublicRoutes);
 
 router.use("/testimonials", testimonialsRoutes);
-router.use("/pages", pagesRoutes);
+router.use("/pages", pagesPublicRoutes);
 
 // Auth
 router.use("/admin/auth", authRoutes);
@@ -37,7 +39,7 @@ router.use("/admin/careers", careersRoutes);
 router.use("/admin/leads", leadsRoutes);
 router.use("/admin/team", teamAdminRoutes);
 router.use("/admin/testimonials", testimonialsRoutes);
-router.use("/admin/pages", pagesRoutes);
+router.use("/admin/pages", pagesAdminRoutes);
 router.use("/admin/services", servicesAdminRoutes);
 router.use("/admin/portfolio", portfolioAdminRoutes);
 router.use("/admin/seo", seoRoutes);
