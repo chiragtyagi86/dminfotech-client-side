@@ -2,7 +2,7 @@
 import PortfolioHero from "../components/portfolio/PortfolioHero";
 import ProjectGrid from "../components/portfolio/ProjectGrid";
 import PortfolioIndustries from "../components/portfolio/PortfolioIndustries";
-import CTASection from "../components/home/Ctasection";
+import CTASection from "../components/home/CtaSection";
 import { useApi } from "../lib/useApi";
 import { api } from "../lib/api";
 import Seo from "../components/common/Seo";

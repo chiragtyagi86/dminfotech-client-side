@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useApi } from "../lib/useApi";
 import { api } from "../lib/api";
 import Container from "../components/common/Container";
-import CTASection from "../components/home/Ctasection";
+import CTASection from "../components/home/CtaSection";
 import Seo from "../components/common/Seo";
 
 const STATIC_TEAM = [

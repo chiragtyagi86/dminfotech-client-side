@@ -4,7 +4,7 @@ import ServicesGrid from "../components/services/ServiceGrid";
 import ServiceBlocks from "../components/services/ServiceBlocks";
 import ServiceProcess from "../components/services/ServiceProcess";
 import WhyChooseUs from "../components/home/WhyChooseUs";
-import CTASection from "../components/home/Ctasection";
+import CTASection from "../components/home/CtaSection";
 import { useApi } from "../lib/useApi";
 import { api } from "../lib/api";
 import Seo from "../components/common/Seo";

@@ -5,7 +5,7 @@ import AboutMissionVision from "../components/about/Aboutmissionvision";
 import AboutTrust from "../components/about/Abouttrust";
 import WhyChooseUs from "../components/home/WhyChooseUs";
 import AboutPhilosophy from "../components/about/Aboutphilosophy";
-import CTASection from "../components/home/Ctasection";
+import CTASection from "../components/home/CtaSection";
 import Seo from "../components/common/Seo";
 export default function AboutPage() {
   return (

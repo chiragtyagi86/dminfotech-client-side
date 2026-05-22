@@ -2,8 +2,8 @@
 import { useApi } from "../lib/useApi";
 import { api } from "../lib/api";
 import Container from "../components/common/Container";
-import SectionHeading from "../components/common/Sectionheading";
-import CTASection from "../components/home/Ctasection";
+import SectionHeading from "../components/common/SectionHeading";
+import CTASection from "../components/home/CtaSection";
 import Seo from "../components/common/Seo";
 
 const STATIC = [

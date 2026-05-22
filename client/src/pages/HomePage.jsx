@@ -6,7 +6,7 @@ import WhyChooseUs from "../components/home/WhyChooseUs";
 import PortfolioPreview from "../components/home/Portfoliopreview";
 import TestimonialsPreview from "../components/home/Testimonialspreview";
 import BlogPreview from "../components/home/Blogpreview";
-import CTASection from "../components/home/Ctasection";
+import CTASection from "../components/home/CtaSection";
 import Seo from "../components/common/Seo";
 export default function HomePage() {
   return (

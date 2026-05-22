@@ -1,7 +1,7 @@
 // src/pages/blog/BlogPage.jsx
 import { Link } from "react-router-dom";
 import Container from "../../components/common/Container";
-import CTASection from "../../components/home/Ctasection";
+import CTASection from "../../components/home/CtaSection";
 import { useApi } from "../../lib/useApi";
 import { api, formatDate } from "../../lib/api";
 import Seo from "../../components/common/Seo";
