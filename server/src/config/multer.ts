@@ -96,7 +96,7 @@ type UploadType = "image" | "pdf" | "any" | string[];
  * @param maxSizeMB  max file size in MB
  */
 function getUploader(folder = "", type: UploadType = "image", maxSizeMB = 5) {
-  const uploadDir = path.join(process.cwd(), "uploads", folder);
+  const uploadDir = path.join(__dirname, "..", "uploads", folder);
 
   // Ensure folder exists
   fs.mkdirSync(uploadDir, { recursive: true });

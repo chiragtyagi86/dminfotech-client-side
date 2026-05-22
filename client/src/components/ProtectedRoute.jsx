@@ -14,15 +14,11 @@ export default function ProtectedRoute({ children }) {
       try {
         setStatus("checking");
 
-        // Use settings/auth-protected endpoint to verify session.
-        // If your backend has a dedicated /admin/auth/me endpoint later,
-        // replace this with that endpoint.
-        const res = await adminApi.getSettings();
+        const res = await adminApi.getCurrentAdmin();
 
         if (!mounted) return;
 
-        // Only allow if we received a real object/response.
-        if (res) {
+        if (res && res.admin) {
           setStatus("ok");
         } else {
           setStatus("denied");

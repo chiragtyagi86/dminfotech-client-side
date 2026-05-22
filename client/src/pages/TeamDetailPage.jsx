@@ -16,12 +16,25 @@ function getMediaUrl(path) {
   return `${APP_URL}${path}`;
 }
 
+function slugifyTeamName(value) {
+  if (!value) return "";
+  return String(value)
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_]+/g, "-")
+    .replace(/[^a-z0-9-]+/g, "")
+    .replace(/-{2,}/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
 function normalizeMember(item) {
   if (!item || typeof item !== "object") return null;
 
+  const name = String(item?.name || "Team Member").trim();
   return {
     id: item?.id ?? null,
-    name: String(item?.name || "Team Member").trim(),
+    slug: item?.slug || slugifyTeamName(name || item?.position || String(item?.id ?? "")),
+    name,
     role: String(item?.role || item?.position || item?.short_desc || "Team Member").trim(),
     bio: String(item?.bio || item?.short_desc || "Profile details coming soon.").trim(),
     avatar: getMediaUrl(item?.avatar || item?.photo_url || null),
@@ -55,14 +68,14 @@ function getInitial(name) {
 }
 
 export default function TeamDetailPage() {
-  const { id } = useParams();
+  const { slug } = useParams();
 
-  const { data: rawMember, loading, error } = useApi(() => api.getTeamMember(id), [id]);
+  const { data: rawMember, loading, error } = useApi(() => api.getTeamMember(slug), [slug]);
   const { data: rawAllMembers } = useApi(api.getTeamMembers);
 
   const member = normalizeMember(rawMember);
   const allMembers = normalizeTeam(rawAllMembers);
-  const related = allMembers.filter((m) => String(m.id) !== String(id)).slice(0, 3);
+  const related = allMembers.filter((m) => m.slug !== slug).slice(0, 3);
 
   if (loading) return <Spinner />;
   if (error || !member) return <Navigate to="/team" replace />;
@@ -74,7 +87,7 @@ export default function TeamDetailPage() {
         description={member.bio}
         keywords={[member.role, ...(member.skills || [])].filter(Boolean)}
         image={member.avatar || "/logo.png"}
-        url={`/team/${member.id}`}
+        url={`/team/${member.slug}`}
       />
 
       <style>{`

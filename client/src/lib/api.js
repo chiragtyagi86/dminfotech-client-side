@@ -77,6 +77,8 @@ export const adminApi = {
   logout: () =>
     apiFetch("/admin/auth/logout", { method: "POST" }),
 
+  getCurrentAdmin: () => apiFetch("/admin/auth/me"),
+
   // Dashboard
   getDashboard: () => apiFetch("/admin/dashboard"),
 

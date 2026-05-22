@@ -187,7 +187,7 @@ export async function createPost(body: any): Promise<{ id: number; slug: string 
     `INSERT INTO blog_posts (title, slug, excerpt, content, cover_image, status, published_at,
                              meta_title, meta_description, og_image, category_id)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [title.trim(), slug, excerpt, content, cover_image, status, published_at, meta_title, meta_description, og_image]
+    [title.trim(), slug, excerpt, content, cover_image, status, published_at, meta_title, meta_description, og_image, category_id]
   );
 
   return { id: result.insertId, slug };

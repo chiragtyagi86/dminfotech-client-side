@@ -176,7 +176,8 @@ export async function deleteMedia(key: string): Promise<void> {
   const [rows] = await db.query<any[]>("SELECT file_path FROM site_media WHERE media_key = ?", [key]);
   if (rows.length === 0) throw Object.assign(new Error("Media not found"), { status: 404 });
 
-  const fullPath = path.join(process.cwd(), "public", rows[0].file_path);
+  const filePath = rows[0].file_path?.toString().replace(/^\//, "");
+  const fullPath = path.join(__dirname, "..", filePath);
   try { await fs.unlink(fullPath); } catch { /* file may not exist on disk */ }
 
   await db.query("DELETE FROM site_media WHERE media_key = ?", [key]);

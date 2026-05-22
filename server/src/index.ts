@@ -47,7 +47,8 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
 
 // ── Static files ──────────────────────────────────────────────────────────────
-app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+const uploadsPath = path.join(__dirname, "..", "uploads");
+app.use("/uploads", express.static(uploadsPath));
 
 // ── API routes ────────────────────────────────────────────────────────────────
 app.use("/api", router);

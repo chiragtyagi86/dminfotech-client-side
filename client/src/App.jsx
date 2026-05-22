@@ -98,7 +98,7 @@ function AppShell() {
         <Route path="/careers/:slug"       element={<CareerDetailPage />} />
         <Route path="/testimonials"        element={<TestimonialsPage />} />
         <Route path="/team"                element={<TeamPage />} />
-        <Route path="/team/:id"            element={<TeamDetailPage />} />
+        <Route path="/team/:slug"          element={<TeamDetailPage />} />
         <Route path="/:slug"         element={<DynamicPage />} />
 
         {/* ── Admin: login (no layout, no protection) ── */}

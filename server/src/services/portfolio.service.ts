@@ -60,7 +60,7 @@ export async function createPortfolioItem(body: any): Promise<{ id: number; slug
   const short_desc       = body.desc             || body.short_desc || "";
   const category         = body.category         || "";
   const image            = body.image            || "";
-  const sort_order       = body.sort_order       || 1;
+  const sort_order       = body.order || body.sort_order || 1;
   const status           = body.status           || "draft";
   const meta_title       = body.seoTitle         || body.meta_title || "";
   const meta_description = body.seoDescription   || body.meta_description || "";
@@ -123,7 +123,7 @@ export async function updatePortfolioItem(slug: string, body: any): Promise<{ sl
       body.short_desc || body.desc || "",
       contentValue,
       body.image || "",
-      body.sort_order || 1,
+      body.order || body.sort_order || 1,
       status,
       body.meta_title || body.seoTitle || "",
       body.meta_description || body.seoDescription || "",

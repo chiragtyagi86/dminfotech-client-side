@@ -4,9 +4,10 @@
   "description": "Express.js backend server for Dhanamitra Infotech LLP",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js",
     "build": "tsc",
+    "prestart": "npm run build",
+    "start": "node dist/index.js",
+    "dev": "ts-node-dev --respawn src/index.ts",
     "dev:ts": "ts-node-dev --respawn src/index.ts"
   },
   "dependencies": {

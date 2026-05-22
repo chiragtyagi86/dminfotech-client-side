@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { AuthRequest } from "../middleware/auth";
 import { loginAdmin } from "../services/auth.service";
 
 const isProd = process.env.NODE_ENV === "production";
@@ -26,6 +27,10 @@ export async function login(req: Request, res: Response): Promise<void> {
     console.error("[auth/login]", err);
     res.status(500).json({ message: "Server error. Please try again." });
   }
+}
+
+export function me(req: AuthRequest, res: Response): void {
+  res.json({ admin: req.admin ?? null });
 }
 
 export function logout(_req: Request, res: Response): void {

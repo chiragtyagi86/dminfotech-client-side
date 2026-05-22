@@ -49,6 +49,34 @@ const STATIC_TEAM = [
   },
 ];
 
+function slugifyTeamName(value) {
+  if (!value) return "";
+  return String(value)
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_]+/g, "-")
+    .replace(/[^a-z0-9-]+/g, "")
+    .replace(/-{2,}/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+function getTeamGroup(item) {
+  const department = String(item?.department || item?.role || item?.position || "").toLowerCase();
+  if (/\b(ceo|founder|chief|head|director|manager|lead|vp|vice|partner)\b/.test(department)) {
+    return { key: "management", title: "Management", description: "Leadership, strategy and senior ownership across the business." };
+  }
+  if (/\b(developer|engineer|technical|dev|software|programmer|full[- ]stack|frontend|backend|mobile|qa|quality assurance)\b/.test(department)) {
+    return { key: "development", title: "Development", description: "Engineering and product teams building the digital solutions." };
+  }
+  if (/\b(sales|marketing|business development|bd|growth|account|client|partnership)\b/.test(department)) {
+    return { key: "sales", title: "Sales & Marketing", description: "Customer growth, brand and business development specialists." };
+  }
+  if (/\b(operations|support|hr|finance|administration|office|people)\b/.test(department)) {
+    return { key: "operations", title: "Operations & Support", description: "Operational excellence, delivery and support roles." };
+  }
+  return { key: "others", title: "Specialists", description: "Everyone else who makes our work possible." };
+}
+
 function normalizeTeam(raw) {
   const source = Array.isArray(raw)
     ? raw
@@ -58,26 +86,53 @@ function normalizeTeam(raw) {
         ? raw.members
         : [];
 
-  return source.map((item, index) => ({
-    id: item?.id ?? index + 1,
-    name: String(item?.name || "Team Member").trim(),
-    role: String(
-      item?.role || item?.position || item?.short_desc || "Team Member",
-    ).trim(),
-    bio: String(
-      item?.bio || item?.short_desc || "Profile details coming soon.",
-    ).trim(),
-    avatar: item?.avatar || item?.photo_url || null,
-    signature: item?.signature || null,
-    email: item?.email || null,
-    linkedinUrl: item?.linkedinUrl || item?.linkedin_url || null,
-    twitterUrl: item?.twitterUrl || item?.twitter_url || null,
-    websiteUrl: item?.websiteUrl || item?.website_url || null,
-    resumeUrl: item?.resumeUrl || item?.resume_url || null,
-    status: item?.status || null,
-    isActive: item?.isActive ?? item?.is_active ?? null,
-    skills: Array.isArray(item?.skills) ? item.skills : [],
-  }));
+  return source.map((item, index) => {
+    const name = String(item?.name || "Team Member").trim();
+    const slug = item?.slug || slugifyTeamName(name || item?.position || String(item?.id ?? index + 1));
+    return {
+      id: item?.id ?? index + 1,
+      slug,
+      name,
+      role: String(
+        item?.role || item?.position || item?.short_desc || "Team Member",
+      ).trim(),
+      bio: String(
+        item?.bio || item?.short_desc || "Profile details coming soon.",
+      ).trim(),
+      avatar: item?.avatar || item?.photo_url || null,
+      signature: item?.signature || null,
+      email: item?.email || null,
+      linkedinUrl: item?.linkedinUrl || item?.linkedin_url || null,
+      twitterUrl: item?.twitterUrl || item?.twitter_url || null,
+      websiteUrl: item?.websiteUrl || item?.website_url || null,
+      resumeUrl: item?.resumeUrl || item?.resume_url || null,
+      status: item?.status || null,
+      isActive: item?.isActive ?? item?.is_active ?? null,
+      skills: Array.isArray(item?.skills) ? item.skills : [],
+      department: item?.department || item?.role || item?.position || null,
+    };
+  });
+}
+
+function buildTeamGroups(members) {
+  const buckets = new Map();
+  members.forEach((member) => {
+    const group = getTeamGroup(member);
+    const existing = buckets.get(group.key);
+    if (existing) {
+      existing.members.push(member);
+    } else {
+      buckets.set(group.key, { ...group, members: [member] });
+    }
+  });
+
+  const priority = ["management", "development", "sales", "operations", "others"];
+  return priority
+    .map((key) => buckets.get(key))
+    .filter(Boolean)
+    .concat(
+      Array.from(buckets.values()).filter((group) => !priority.includes(group.key))
+    );
 }
 
 function getInitial(name) {
@@ -94,6 +149,7 @@ export default function TeamPage() {
 
   const normalized = normalizeTeam(data);
   const members = normalized.length ? normalized : STATIC_TEAM;
+  const groups = buildTeamGroups(members);
 
   return (
     <>
@@ -110,6 +166,7 @@ export default function TeamPage() {
           "ISO certified digital services team",
           "modern digital solutions India team",
         ]}
+        url="/team"
       />
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=DM+Sans:wght@300;400;500&display=swap');
@@ -184,79 +241,94 @@ export default function TeamPage() {
               {members.length} Team Member{members.length !== 1 ? "s" : ""}
             </p>
 
-            <div className="team-grid">
-              {members.map((m) => (
-                <Link key={m.id} to={`/team/${m.id}`} className="team-card">
-                  <div className="team-card-photo">
-                    {m.avatar ? (
-                      <img
-                        src={`${import.meta.env.VITE_API_URL}${m.avatar}`}
-                        alt={m.name}
-                        style={{
-                          position: "absolute",
-                          inset: 0,
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                        }}
-                      />
-                    ) : (
-                      <>
-                        <div className="team-card-photo-bg" />
-                        <div className="team-card-photo-grid" />
-                        <div className="team-card-photo-initials">
-                          {getInitial(m.name)}
+            {groups.map((group) => (
+              <div key={group.key} style={{ marginBottom: 56 }}>
+                <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 12, alignItems: "center", marginBottom: 28 }}>
+                  <div>
+                    <p className="team-label">{group.title}</p>
+                    <p style={{ margin: 0, color: "var(--color-text-soft)", maxWidth: 760, fontSize: 14, lineHeight: 1.8 }}>
+                      {group.description}
+                    </p>
+                  </div>
+                  <div style={{ fontSize: 12, fontWeight: 500, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--color-primary)" }}>
+                    {group.members.length} member{group.members.length !== 1 ? "s" : ""}
+                  </div>
+                </div>
+                <div className="team-grid">
+                  {group.members.map((m) => (
+                    <Link key={m.slug || m.id} to={`/team/${m.slug}`} className="team-card">
+                      <div className="team-card-photo">
+                        {m.avatar ? (
+                          <img
+                            src={`${import.meta.env.VITE_API_URL}${m.avatar}`}
+                            alt={m.name}
+                            style={{
+                              position: "absolute",
+                              inset: 0,
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                            }}
+                          />
+                        ) : (
+                          <>
+                            <div className="team-card-photo-bg" />
+                            <div className="team-card-photo-grid" />
+                            <div className="team-card-photo-initials">
+                              {getInitial(m.name)}
+                            </div>
+                          </>
+                        )}
+                      </div>
+
+                      <div className="team-card-body">
+                        <p className="team-card-role">{m.role}</p>
+                        <h3 className="team-card-name">{m.name}</h3>
+                        <p className="team-card-bio line-clamp-1">{m.bio}</p>
+
+                        <div className="team-card-socials">
+                          {m.linkedinUrl && (
+                            <a
+                              href={m.linkedinUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="team-card-social"
+                            >
+                              in
+                            </a>
+                          )}
+                          {m.twitterUrl && (
+                            <a
+                              href={m.twitterUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="team-card-social"
+                            >
+                              𝕏
+                            </a>
+                          )}
+                          {m.websiteUrl && (
+                            <a
+                              href={m.websiteUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="team-card-social"
+                            >
+                              ↗
+                            </a>
+                          )}
                         </div>
-                      </>
-                    )}
-                  </div>
 
-                  <div className="team-card-body">
-                    <p className="team-card-role">{m.role}</p>
-                    <h3 className="team-card-name">{m.name}</h3>
-                    <p className="team-card-bio">{m.bio}</p>
-
-                    <div className="team-card-socials">
-                      {m.linkedinUrl && (
-                        <a
-                          href={m.linkedinUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="team-card-social"
-                        >
-                          in
-                        </a>
-                      )}
-                      {m.twitterUrl && (
-                        <a
-                          href={m.twitterUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="team-card-social"
-                        >
-                          𝕏
-                        </a>
-                      )}
-                      {m.websiteUrl && (
-                        <a
-                          href={m.websiteUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="team-card-social"
-                        >
-                          ↗
-                        </a>
-                      )}
-                    </div>
-
-                    <span className="team-card-link">View Profile →</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
+                        <span className="team-card-link">View Profile →</span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ))}
           </Container>
         </section>
 

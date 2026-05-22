@@ -1,10 +1,12 @@
 // src/routes/auth.routes.ts
 import { Router } from "express";
-import { login, logout } from "../controllers/auth.controller";
+import * as authController from "../controllers/auth.controller";
+import { requireAdmin } from "../middleware/auth";
 
 const router = Router();
 
-router.post("/login",  login);
-router.post("/logout", logout);
+router.post("/login",  authController.login);
+router.post("/logout", authController.logout);
+router.get("/me", requireAdmin, authController.me);
 
 export default router;

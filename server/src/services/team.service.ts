@@ -2,20 +2,48 @@
 
 import db from "../config/db";
 
+function slugifyTeamMemberName(name: any) {
+  if (!name) return "";
+  return String(name)
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_]+/g, "-")
+    .replace(/[^a-z0-9-]+/g, "")
+    .replace(/-{2,}/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+function attachMemberSlug(member: any) {
+  if (!member || typeof member !== "object") return member;
+  return {
+    ...member,
+    slug: member.slug || slugifyTeamMemberName(member.name || member.position || String(member.id)),
+  };
+}
+
 export async function getAllTeam(search: string) {
   let query = `SELECT * FROM team_members WHERE status = 'active'`;
   const params: any[] = [];
   if (search) { query += ` AND (name LIKE ? OR position LIKE ?)`; params.push(`%${search}%`, `%${search}%`); }
   query += ` ORDER BY created_at DESC`;
   const [rows] = await db.query(query, params);
-  return rows;
+  return (rows as any[]).map(attachMemberSlug);
 }
 
 export async function getTeamMemberById(id: string) {
-  const [rows] = await db.query(
-    `SELECT * FROM team_members WHERE id = ? AND status = 'active'`, [id]
-  );
-  return (rows as any[])[0] ?? null;
+  const isNumericId = /^\d+$/.test(id);
+  if (isNumericId) {
+    const [rows] = await db.query(
+      `SELECT * FROM team_members WHERE id = ? AND status = 'active'`, [id]
+    );
+    return attachMemberSlug((rows as any[])[0] ?? null);
+  }
+
+  const [rows] = await db.query(`SELECT * FROM team_members WHERE status = 'active'`);
+  const member = (rows as any[])
+    .map(attachMemberSlug)
+    .find((row) => row.slug === id);
+  return member ?? null;
 }
 
 export async function createTeamMember(

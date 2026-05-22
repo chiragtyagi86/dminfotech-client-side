@@ -1,26 +1,33 @@
 import { Helmet } from "react-helmet-async";
+import { useSiteConfig } from "../../context/SiteConfigContext.jsx";
 
 export default function Seo({
-  title = "Dhanamitra Infotech LLP",
-  description = "ISO 9001:2015 certified company delivering website development, software solutions, and digital transformation services.",
+  title = "",
+  description = "",
   keywords = [],
-  image = "/logo.png",
+  image = "",
   url = "",
   type = "website",
 }) {
-  const siteUrl = import.meta.env.VITE_SITE_URL || window.location.origin;
+  const { siteConfig } = useSiteConfig();
+  const siteUrl = import.meta.env.VITE_SITE_URL || siteConfig.url || window.location.origin;
   const fullUrl = url ? `${siteUrl}${url}` : window.location.href;
-  const fullImage = image?.startsWith("http") ? image : `${siteUrl}${image}`;
+  const resolvedImage = image || siteConfig.ogImage || "/logo.png";
+  const fullImage = resolvedImage.startsWith("http")
+    ? resolvedImage
+    : `${siteUrl}${resolvedImage}`;
 
+  const pageTitle = title || siteConfig.name;
+  const pageDescription = description || siteConfig.description;
   const keywordString = Array.isArray(keywords)
     ? keywords.join(", ")
     : keywords;
 
   return (
     <Helmet>
-      <title>{title}</title>
+      <title>{pageTitle}</title>
 
-      <meta name="description" content={description} />
+      <meta name="description" content={pageDescription} />
 
       {keywordString && (
         <meta name="keywords" content={keywordString} />
@@ -32,15 +39,16 @@ export default function Seo({
 
       {/* Open Graph */}
       <meta property="og:type" content={type} />
-      <meta property="og:title" content={title} />
-      <meta property="og:description" content={description} />
+      <meta property="og:site_name" content={siteConfig.name} />
+      <meta property="og:title" content={pageTitle} />
+      <meta property="og:description" content={pageDescription} />
       <meta property="og:url" content={fullUrl} />
       <meta property="og:image" content={fullImage} />
 
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={title} />
-      <meta name="twitter:description" content={description} />
+      <meta name="twitter:title" content={pageTitle} />
+      <meta name="twitter:description" content={pageDescription} />
       <meta name="twitter:image" content={fullImage} />
     </Helmet>
   );
