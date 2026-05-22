@@ -84,11 +84,13 @@ jobs:
       - name: Frontend Security Audit
         run: |
           cd client
+          npm ci
           npm audit --audit-level=high
 
       - name: Backend Security Audit
         run: |
           cd server
+          npm ci
           npm audit --audit-level=high
 
   deploy-staging:
@@ -108,6 +110,14 @@ jobs:
           cd client
           npm ci
           npm run build
+
+      - name: Build Backend
+        run: |
+          cd server
+          npm ci
+          npm run build
+          mkdir -p tmp
+          date > tmp/restart.txt
 
       - name: Deploy Frontend to Staging
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
@@ -160,6 +170,14 @@ jobs:
           cd client
           npm ci
           npm run build
+
+      - name: Build Backend
+        run: |
+          cd server
+          npm ci
+          npm run build
+          mkdir -p tmp
+          date > tmp/restart.txt
 
       - name: Deploy Frontend to Production
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
