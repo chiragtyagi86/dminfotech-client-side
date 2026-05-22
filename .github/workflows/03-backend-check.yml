@@ -28,7 +28,7 @@ jobs:
           cd server
           npm ci
 
-      - name: Backend Syntax Check
+      - name: TypeScript Build Check
         run: |
           cd server
-          node --check server.js
+          npm run build
