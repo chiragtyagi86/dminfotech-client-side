@@ -426,6 +426,21 @@ export default function Footer() {
                   Career Opportunities
                 </Link>
               </div>
+
+              {siteConfig.cmsPages?.length > 0 && (
+                <>
+                  <div className="footer-col-heading" style={{ marginTop: 32 }}>
+                    CMS Pages
+                  </div>
+                  <div className="footer-links">
+                    {siteConfig.cmsPages.map((page) => (
+                      <Link key={page.href} to={page.href} className="footer-link">
+                        {page.label}
+                      </Link>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
 
             <div>

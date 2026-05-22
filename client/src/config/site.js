@@ -18,6 +18,7 @@ const siteConfig = {
   youtubeUrl: "",
   copyrightText: `© ${new Date().getFullYear()} Dhanamitra Infotech LLP. All rights reserved.`,
   footerDescription: "",
+  cmsPages: [],
   navLinks: [
     { label: "Home", href: "/" },
     { label: "About", href: "/about" },
