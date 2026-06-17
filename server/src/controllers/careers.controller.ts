@@ -97,9 +97,10 @@ export async function adminGetApplications(req: Request, res: Response): Promise
 
 export async function adminUpdateApplication(req: Request, res: Response): Promise<void> {
   try {
-    const { appId, status, notes } = req.body;
-    await careersService.updateApplication(appId, status, notes);
-    res.json({ message: "Application updated." });
+    const { status, notes, email } = req.body;
+    const appId = req.body.appId || req.params.id;
+    await careersService.updateApplication(appId, status, notes, email);
+    res.json({ message: email?.send ? "Application updated and email sent." : "Application updated." });
   } catch (err: any) {
     console.error("[careers/adminUpdateApplication]", err);
     res.status(err.status || 500).json({ message: err.message || "Server error." });

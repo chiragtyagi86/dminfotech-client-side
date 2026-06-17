@@ -2,6 +2,7 @@
 
 import db from "../config/db";
 import path from "path";
+import { renderCareerApplicationEmail, sendMail } from "./mailer.service";
 
 // ── Public ────────────────────────────────────────────────────────────────────
 
@@ -175,21 +176,96 @@ export async function getApplicationsByJobId(jobId: string) {
 }
 
 export async function updateApplication(
-  appId: string, status?: string, notes?: string
+  appId: string,
+  status?: string,
+  notes?: string,
+  email?: { send?: boolean; subject?: string; message?: string; statusLabel?: string }
 ): Promise<void> {
   const allowed = ["new", "reviewing", "shortlisted", "rejected", "hired"];
-  if (status && !allowed.includes(status))
+  const normalizedStatus = status?.trim().toLowerCase();
+  if (normalizedStatus && !allowed.includes(normalizedStatus))
     throw Object.assign(new Error("Invalid status."), { status: 400 });
 
   const updates: string[] = [];
   const values:  any[]    = [];
 
-  if (status !== undefined) { updates.push("status = ?"); values.push(status); }
+  if (status !== undefined) { updates.push("status = ?"); values.push(normalizedStatus); }
   if (notes  !== undefined) { updates.push("notes = ?");  values.push(notes);  }
-  if (!updates.length)       throw Object.assign(new Error("Nothing to update."), { status: 400 });
+  if (!updates.length && !email?.send) {
+    throw Object.assign(new Error("Nothing to update."), { status: 400 });
+  }
 
-  updates.push("updated_at = NOW()");
-  values.push(appId);
+  if (updates.length) {
+    updates.push("updated_at = NOW()");
+    values.push(appId);
+    const [result] = await db.query<any>(
+      `UPDATE job_applications SET ${updates.join(", ")} WHERE id = ?`,
+      values
+    );
+    if (result.affectedRows === 0) {
+      throw Object.assign(new Error("Application not found."), { status: 404 });
+    }
+  }
 
-  await db.query(`UPDATE job_applications SET ${updates.join(", ")} WHERE id = ?`, values);
+  if (email?.send) {
+    const [rows] = await db.query<any[]>(
+      `SELECT a.name, a.email, a.status, j.title AS job_title
+       FROM job_applications a
+       JOIN job_listings j ON j.id = a.job_id
+       WHERE a.id = ?
+       LIMIT 1`,
+      [appId]
+    );
+
+    if (!rows.length) {
+      throw Object.assign(new Error("Application not found."), { status: 404 });
+    }
+
+    const app = rows[0];
+    const statusLabel = email.statusLabel || labelForStatus(normalizedStatus || app.status);
+    const subject = email.subject?.trim() || `Update on your DM Infotech application`;
+    const message = email.message?.trim() || defaultApplicationMessage(statusLabel, app.job_title);
+
+    await sendMail({
+      to: app.email,
+      subject,
+      html: renderCareerApplicationEmail({
+        candidateName: app.name,
+        jobTitle: app.job_title,
+        statusLabel,
+        message,
+      }),
+    });
+  }
+}
+
+function labelForStatus(status?: string) {
+  const labels: Record<string, string> = {
+    new: "Application Received",
+    reviewing: "Application Under Review",
+    shortlisted: "You Have Been Shortlisted",
+    rejected: "Application Update",
+    hired: "Congratulations from DM Infotech",
+  };
+  return labels[String(status || "").toLowerCase()] || "Application Update";
+}
+
+function defaultApplicationMessage(statusLabel: string, jobTitle: string) {
+  if (statusLabel.includes("Shortlisted")) {
+    return `Thank you for applying to DM Infotech. We are pleased to let you know that your profile has been shortlisted for ${jobTitle}. Our team will contact you with the next steps shortly.`;
+  }
+
+  if (statusLabel.includes("Congratulations")) {
+    return `Congratulations. We are happy to inform you that you have been selected for ${jobTitle} at DM Infotech. Our team will reach out with onboarding details.`;
+  }
+
+  if (statusLabel === "Application Update") {
+    return `Thank you for your interest in ${jobTitle} at DM Infotech. After careful review, we are unable to move forward with your application at this stage. We appreciate your time and wish you success in your career journey.`;
+  }
+
+  if (statusLabel.includes("Review")) {
+    return `Thank you for applying to DM Infotech. Your application for ${jobTitle} is currently under review. We will update you once the next decision is available.`;
+  }
+
+  return `Thank you for applying to DM Infotech. We have received your application for ${jobTitle} and our team will review it shortly.`;
 }

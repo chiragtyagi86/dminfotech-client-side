@@ -25,6 +25,7 @@ const NAV = [
     items: [
       { label: "Leads", href: "/admin/leads", icon: "◆" },
       { label: "Careers", href: "/admin/careers", icon: "◇" },
+      { label: "Internships", href: "/admin/internships", icon: "◌" },
       { label: "Team", href: "/admin/team", icon: "◑" },
       { label: "Testimonials", href: "/admin/testimonials", icon: "❝" },
       { label: "SEO", href: "/admin/seo", icon: "◐" },
