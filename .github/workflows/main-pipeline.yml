@@ -204,7 +204,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftp
           port: 21
-          local-dir: ./server/
+          local-dir: ./server/dist/
           server-dir: ./api.dmifotech.com/
           timeout: 120000
           exclude: |

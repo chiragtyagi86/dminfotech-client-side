@@ -25,6 +25,7 @@ import DynamicPage         from "./pages/DynamicPage";
 // Admin pages
 import AdminLayout           from "./admin/layout/AdminLayout";
 import ProtectedRoute        from "./components/ProtectedRoute";
+import InternProtectedRoute  from "./components/InternProtectedRoute";
 import AdminLoginPage        from "./admin/login";
 import DashboardPage         from "./admin/dashboard";
 import AdminBlogPage         from "./admin/blog";
@@ -39,6 +40,7 @@ import EditServicePage       from "./admin/services/edit";
 import AdminCareersPage      from "./admin/careers";
 import AdminCareerEditor     from "./admin/careers/editor";
 import ApplicationsPage      from "./admin/careers/applications";
+import InternshipsPage       from "./admin/internships";
 import LeadsPage             from "./admin/leads";
 import TeamAdminPage         from "./admin/pages/team/TeamAdminPage";
 import TestimonialsAdminPage from "./admin/pages/testimonials/TestimonialsAdminPage";
@@ -49,6 +51,8 @@ import HomePageEditor        from "./admin/pages/pages/HomePageEditor";
 import AboutPageEditor       from "./admin/pages/pages/AboutPageEditor";
 import ContactPageEditor     from "./admin/pages/pages/ContactPageEditor";
 import PageEditor            from "./admin/pages/pages/PageEditor";
+import InternLoginPage       from "./pages/intern/InternLoginPage";
+import InternDashboardPage   from "./pages/intern/InternDashboardPage";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -73,14 +77,21 @@ const A = ({ children }) => (
   </ProtectedRoute>
 );
 
+const I = ({ children }) => (
+  <InternProtectedRoute>
+    {children}
+  </InternProtectedRoute>
+);
+
 // Splits public layout (Header/Footer) from admin layout
 function AppShell() {
   const { pathname } = useLocation();
   const isAdmin = pathname.startsWith("/admin");
+  const isIntern = pathname.startsWith("/intern");
 
   return (
     <>
-      {!isAdmin && <Header />}
+      {!isAdmin && !isIntern && <Header />}
       <Routes>
 
         {/* ── Public routes ── */}
@@ -103,6 +114,8 @@ function AppShell() {
 
         {/* ── Admin: login (no layout, no protection) ── */}
         <Route path="/admin/login" element={<AdminLoginPage />} />
+        <Route path="/intern/login" element={<InternLoginPage />} />
+        <Route path="/intern/dashboard" element={<I><InternDashboardPage /></I>} />
 
         {/* ── Admin: protected + wrapped in AdminLayout ── */}
         <Route path="/admin"                           element={<A><DashboardPage /></A>} />
@@ -119,6 +132,7 @@ function AppShell() {
         <Route path="/admin/careers/new"               element={<A><AdminCareerEditor /></A>} />
         <Route path="/admin/careers/:id"               element={<A><AdminCareerEditor /></A>} />
         <Route path="/admin/careers/:id/applications"  element={<A><ApplicationsPage /></A>} />
+        <Route path="/admin/internships"               element={<A><InternshipsPage /></A>} />
         <Route path="/admin/leads"                     element={<A><LeadsPage /></A>} />
         <Route path="/admin/team"                      element={<A><TeamAdminPage /></A>} />
         <Route path="/admin/testimonials"              element={<A><TestimonialsAdminPage /></A>} />
@@ -132,7 +146,7 @@ function AppShell() {
 
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
-      {!isAdmin && <Footer />}
+      {!isAdmin && !isIntern && <Footer />}
     </>
   );
 }

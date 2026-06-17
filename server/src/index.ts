@@ -70,11 +70,14 @@ app.use(errorHandler);
 app.listen(PORT, () => {
   console.log(`
 ╔════════════════════════════════════════════════════╗
-║     Dhanamitra Infotech — Express API Server      ║
-║     Running on: http://localhost:${PORT}          ║
-║     Environment: ${process.env.NODE_ENV || "development"}                   ║
+║     Dhanamitra Infotech — Express API Server       ║
+║     Running on: http://api.dmifotech.com:${PORT}      ║
+║     Environment: ${process.env.NODE_ENV ||
+               "development"}                       ║
+║                                                    ║
 ╚════════════════════════════════════════════════════╝
   `);
 });
+
 
 export default app;

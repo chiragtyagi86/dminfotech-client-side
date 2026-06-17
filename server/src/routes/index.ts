@@ -15,6 +15,8 @@ import {
   settingsAdminRoutes
 } from "./settings.routes";
 import dashboardRoutes from "./dashboard.routes";
+import internshipsRoutes from "./internships.routes";
+import internPortalRoutes from "./internPortal.routes";
 
 const router = Router();
 
@@ -29,6 +31,7 @@ router.use("/settings", settingsPublicRoutes);
 
 router.use("/testimonials", testimonialsRoutes);
 router.use("/pages", pagesPublicRoutes);
+router.use("/intern", internPortalRoutes);
 
 // Auth
 router.use("/admin/auth", authRoutes);
@@ -45,5 +48,6 @@ router.use("/admin/portfolio", portfolioAdminRoutes);
 router.use("/admin/seo", seoRoutes);
 router.use("/admin/settings", settingsAdminRoutes);
 router.use("/admin/dashboard", dashboardRoutes);
+router.use("/admin/internships", internshipsRoutes);
 
 export default router;

@@ -67,6 +67,44 @@ export const api = {
     }),
 };
 
+export const internApi = {
+  login: (email, password) =>
+    apiFetch("/intern/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    }),
+  logout: () => apiFetch("/intern/auth/logout", { method: "POST" }),
+  forgotPassword: (email) =>
+    apiFetch("/intern/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    }),
+  resetPassword: (token, newPassword) =>
+    apiFetch("/intern/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify({ token, newPassword }),
+    }),
+  me: () => apiFetch("/intern/auth/me"),
+  getDashboard: () => apiFetch("/intern/dashboard"),
+  updateProfile: (data) =>
+    apiFetch("/intern/profile", { method: "PUT", body: JSON.stringify(data) }),
+  uploadProfilePhoto: (formData) =>
+    apiFetch("/intern/profile/photo", { method: "POST", body: formData }),
+  uploadFile: (formData) =>
+    apiFetch("/intern/files", { method: "POST", body: formData }),
+  changePassword: (currentPassword, newPassword) =>
+    apiFetch("/intern/password", {
+      method: "POST",
+      body: JSON.stringify({ currentPassword, newPassword }),
+    }),
+  checkIn: () => apiFetch("/intern/attendance/check-in", { method: "POST" }),
+  checkOut: () => apiFetch("/intern/attendance/check-out", { method: "POST" }),
+  submitReport: (data) =>
+    apiFetch("/intern/reports", { method: "POST", body: JSON.stringify(data) }),
+  updateTask: (id, data) =>
+    apiFetch(`/intern/tasks/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+};
+
 export const adminApi = {
   // Auth
   login: (email, password) =>
@@ -216,6 +254,25 @@ deleteTeamMember: (id) =>
 
   deleteMedia: (key) =>
     apiFetch(`/admin/settings/media/${key}`, { method: "DELETE" }),
+
+  // Internship Management
+  getInternships: () => apiFetch("/admin/internships"),
+  createIntern: (data) =>
+    apiFetch("/admin/internships/interns", { method: "POST", body: JSON.stringify(data) }),
+  updateIntern: (id, data) =>
+    apiFetch(`/admin/internships/interns/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+  deleteIntern: (id) =>
+    apiFetch(`/admin/internships/interns/${id}`, { method: "DELETE" }),
+  saveInternAttendance: (data) =>
+    apiFetch("/admin/internships/attendance", { method: "POST", body: JSON.stringify(data) }),
+  saveInternReport: (data) =>
+    apiFetch("/admin/internships/reports", { method: "POST", body: JSON.stringify(data) }),
+  reviewInternReport: (id, data) =>
+    apiFetch(`/admin/internships/reports/${id}/review`, { method: "PATCH", body: JSON.stringify(data) }),
+  createInternTask: (data) =>
+    apiFetch("/admin/internships/tasks", { method: "POST", body: JSON.stringify(data) }),
+  updateInternTask: (id, data) =>
+    apiFetch(`/admin/internships/tasks/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
 };
 
 export function formatDate(dateStr) {
