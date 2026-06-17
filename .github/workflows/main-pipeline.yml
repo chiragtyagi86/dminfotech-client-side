@@ -118,8 +118,6 @@ jobs:
           cd server
           npm ci
           npm run build
-          mkdir -p tmp
-          date > tmp/restart.txt
 
       - name: Deploy Frontend to Staging
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
@@ -140,7 +138,7 @@ jobs:
             **/node_modules/**
             **/redketchup.zip
 
-      - name: Deploy Backend to Staging
+      - name: Deploy Backend Dist to Staging
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -148,14 +146,21 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftp
           port: 21
-          local-dir: ./server/
+
+          # Upload ONLY server/dist contents
+          local-dir: ./server/dist/
           server-dir: ./staging-api.dmifotech.com/
+
           timeout: 120000
+
+          # uploads folder is strictly protected
           exclude: |
             **/.git*
             **/.git*/**
             **/node_modules/**
             **/.env
+            **/uploads/**
+            uploads/**
 
   deploy-production:
     name: 06 Deploy Production
@@ -180,8 +185,6 @@ jobs:
           cd server
           npm ci
           npm run build
-          mkdir -p tmp
-          date > tmp/restart.txt
 
       - name: Deploy Frontend to Production
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
@@ -215,7 +218,10 @@ jobs:
           port: 21
           local-dir: ./server/
           server-dir: ./api.dmifotech.com/
+
           timeout: 120000
+
+          # uploads folder is strictly protected
           exclude: |
             **/.git*
             **/.git*/**
