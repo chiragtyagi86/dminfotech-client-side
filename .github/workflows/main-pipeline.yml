@@ -6,6 +6,9 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+
 jobs:
   code-quality:
     name: 01 Code Quality
@@ -117,18 +120,21 @@ jobs:
           cd server
           npm ci
           npm run build
+          mkdir -p dist/public
+          cp -R ../client/dist/. dist/public/
 
       - name: Deploy Frontend to Staging
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp
+          protocol: ftps
           port: 21
+          security: loose
           local-dir: ./client/dist/
           server-dir: ./staging.dmifotech.com/
-          timeout: 120000
+          timeout: 300000
           exclude: |
             **/.git*
             **/.git*/**
@@ -136,21 +142,17 @@ jobs:
             **/redketchup.zip
 
       - name: Deploy Backend Dist to Staging
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp
+          protocol: ftps
           port: 21
-
-          # Upload ONLY server/dist contents
+          security: loose
           local-dir: ./server/dist/
           server-dir: ./staging-api.dmifotech.com/
-
-          timeout: 120000
-
-          # uploads folder is strictly protected
+          timeout: 300000
           exclude: |
             **/.git*
             **/.git*/**
@@ -182,18 +184,21 @@ jobs:
           cd server
           npm ci
           npm run build
+          mkdir -p dist/public
+          cp -R ../client/dist/. dist/public/
 
       - name: Deploy Frontend to Production
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp
+          protocol: ftps
           port: 21
+          security: loose
           local-dir: ./client/dist/
           server-dir: ./dmifotech.com/
-          timeout: 120000
+          timeout: 300000
           exclude: |
             **/.git*
             **/.git*/**
@@ -201,21 +206,17 @@ jobs:
             **/redketchup.zip
 
       - name: Deploy Backend Dist to Production
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp
+          protocol: ftps
           port: 21
-
-          # Upload ONLY server/dist contents
+          security: loose
           local-dir: ./server/dist/
           server-dir: ./api.dmifotech.com/
-
-          timeout: 120000
-
-          # uploads folder is strictly protected
+          timeout: 300000
           exclude: |
             **/.git*
             **/.git*/**

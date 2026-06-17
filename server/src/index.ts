@@ -11,9 +11,15 @@ dotenv.config();
 
 import router from "./routes/index";
 import { errorHandler } from "./middleware/errorHandler";
+import {
+  frontendDistExists,
+  getFrontendStaticPath,
+  renderFrontendHtml,
+} from "./services/frontendRenderer.service";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const frontendReady = frontendDistExists();
 
 // ── Security ──────────────────────────────────────────────────────────────────
 app.use(
@@ -58,9 +64,30 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-// ── 404 handler ───────────────────────────────────────────────────────────────
-app.use((_req, res) => {
-  res.status(404).json({ message: "Route not found." });
+// ── Frontend with server-side SEO meta injection ─────────────────────────────
+app.use(
+  express.static(getFrontendStaticPath(), {
+    index: false,
+    maxAge: "1y",
+    immutable: true,
+  })
+);
+
+app.get("*", async (req, res, next) => {
+  try {
+    const hasFrontend = await frontendReady;
+    if (!hasFrontend) {
+      res.status(404).json({ message: "Route not found." });
+      return;
+    }
+
+    const html = await renderFrontendHtml(req.path);
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.send(html);
+  } catch (err) {
+    next(err);
+  }
 });
 
 // ── Global error handler ──────────────────────────────────────────────────────
