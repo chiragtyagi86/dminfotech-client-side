@@ -1,3 +1,4 @@
+```yaml
 name: Dhanamitra CI/CD Pipeline
 
 on:
@@ -5,6 +6,9 @@ on:
     branches:
       - main
   workflow_dispatch:
+
+env:
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 
 jobs:
   code-quality:
@@ -73,7 +77,6 @@ jobs:
     name: 04 Security Audit
     runs-on: ubuntu-latest
     needs: backend-check
-    # FIX: audit findings are reported but must NOT block deployment.
     continue-on-error: true
 
     steps:
@@ -120,18 +123,17 @@ jobs:
           npm run build
 
       - name: Deploy Frontend to Staging
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp
+          protocol: ftps
           port: 21
+          security: loose
           local-dir: ./client/dist/
           server-dir: ./staging.dmifotech.com/
-          timeout: 120000
-          # To force a full re-upload once (if sync state drifts), add:
-          #   dangerous-clean-slate: true
+          timeout: 300000
           exclude: |
             **/.git*
             **/.git*/**
@@ -139,21 +141,17 @@ jobs:
             **/redketchup.zip
 
       - name: Deploy Backend Dist to Staging
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp
+          protocol: ftps
           port: 21
-
-          # Upload ONLY server/dist contents
+          security: loose
           local-dir: ./server/dist/
           server-dir: ./staging-api.dmifotech.com/
-
-          timeout: 120000
-
-          # uploads folder is strictly protected
+          timeout: 300000
           exclude: |
             **/.git*
             **/.git*/**
@@ -187,43 +185,40 @@ jobs:
           npm run build
 
       - name: Deploy Frontend to Production
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp
+          protocol: ftps
           port: 21
+          security: loose
           local-dir: ./client/dist/
           server-dir: ./dmifotech.com/
-          timeout: 120000
-          # To force a full re-upload once (if sync state drifts), add:
-          #   dangerous-clean-slate: true
+          timeout: 300000
           exclude: |
             **/.git*
             **/.git*/**
             **/node_modules/**
             **/redketchup.zip
 
-      # FIX: production now uploads the full ./server/ folder (same as the
-      # working staging deploy) so package.json AND tmp/restart.txt ship,
-      # which triggers the app restart and provides runtime files.
-      - name: Deploy Backend to Production
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      - name: Deploy Backend Dist to Production
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp
+          protocol: ftps
           port: 21
-          local-dir: ./server/
+          security: loose
+          local-dir: ./server/dist/
           server-dir: ./api.dmifotech.com/
-
-          timeout: 120000
-
-          # uploads folder is strictly protected
+          timeout: 300000
           exclude: |
             **/.git*
             **/.git*/**
             **/node_modules/**
             **/.env
+            **/uploads/**
+            uploads/**
+```
