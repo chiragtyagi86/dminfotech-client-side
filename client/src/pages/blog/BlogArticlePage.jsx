@@ -31,6 +31,8 @@ export default function BlogArticlePage() {
   return (
     <>
     <Seo
+      entityType="blog"
+      slug={post.slug}
       title={`${post.title} | Dhanamitra Infotech LLP Blog`}
       description={post.excerpt || post.description || "Read our latest insights and updates on digital solutions, software development, IT placements, journal publishing, and stock market training."}
       keywords={[post.category, ...(post.tags || [])].filter(Boolean)}

@@ -296,6 +296,7 @@ export default function TestimonialsPage() {
   return (
     <>
     <Seo
+      slug="testimonials"
       title="Client Testimonials | Dhanamitra Infotech LLP — Digital Solutions, Software & Business Growth"
       description="Discover what our clients have to say about their experience working with Dhanamitra Infotech LLP. Read real testimonials highlighting our commitment to excellence in digital solutions, software development, and business growth."
       keywords={[

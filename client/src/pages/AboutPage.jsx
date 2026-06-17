@@ -11,6 +11,7 @@ export default function AboutPage() {
   return (
     <>
       <Seo
+        slug="about"
         title="About | Dhanamitra Infotech LLP — Digital Solutions, Software & Business Growth"
         description="Dhanamitra Infotech LLP is an ISO 9001:2015 certified digital solutions company delivering website development, custom software, IT placements, journal publishing and stock market training for modern businesses."
         keywords={[

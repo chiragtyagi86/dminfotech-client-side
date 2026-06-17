@@ -39,6 +39,7 @@ export default function CareersPage() {
   return (
     <>
     <Seo
+      slug="careers"
       title="Careers | Dhanamitra Infotech LLP — Join Our Team of Digital Innovators"
       description="Explore career opportunities at Dhanamitra Infotech LLP, an ISO 9001:2015 certified digital solutions company. Join us to work on real projects, grow your skills, and make an impact in the tech industry."
       keywords={[

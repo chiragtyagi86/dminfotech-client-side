@@ -94,6 +94,53 @@ export async function updateEntitySeo(type: string, id: string, body: any): Prom
   }
 }
 
+export async function getPublicEntitySeo(type: string, slug: string) {
+  if (!["page", "blog"].includes(type))
+    throw Object.assign(new Error("Invalid type. Must be 'page' or 'blog'."), { status: 400 });
+
+  const isPage = type === "page";
+  const dataTable = isPage ? "pages" : "blog_posts";
+  const seoTable = isPage ? "page_seo" : "blog_seo";
+  const idColumn = isPage ? "page_id" : "blog_id";
+  const statusClause = isPage ? "AND e.is_published = true" : "AND e.status = 'published'";
+  const fallbackDesc = isPage ? "e.description" : "e.excerpt";
+  const fallbackImage = isPage ? "NULL" : "e.cover_image";
+
+  const [rows] = await db.query<any[]>(
+    `SELECT e.id, e.slug, e.title,
+            COALESCE(s.meta_title, e.title, '') AS meta_title,
+            COALESCE(s.meta_description, ${fallbackDesc}, '') AS meta_description,
+            COALESCE(s.canonical_url, '') AS canonical_url,
+            COALESCE(s.og_title, s.meta_title, e.title, '') AS og_title,
+            COALESCE(s.og_description, s.meta_description, ${fallbackDesc}, '') AS og_description,
+            COALESCE(s.og_image, ${fallbackImage}, '') AS og_image,
+            COALESCE(s.index_enabled, true) AS index_enabled,
+            COALESCE(s.keywords, '') AS keywords
+     FROM ${dataTable} e
+     LEFT JOIN ${seoTable} s ON s.${idColumn} = e.id
+     WHERE e.slug = ? ${statusClause}
+     LIMIT 1`,
+    [slug]
+  );
+
+  if (!rows.length) throw Object.assign(new Error("SEO entity not found."), { status: 404 });
+  const row = rows[0];
+
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    metaTitle: row.meta_title,
+    metaDescription: row.meta_description,
+    canonicalUrl: row.canonical_url,
+    ogTitle: row.og_title,
+    ogDescription: row.og_description,
+    ogImage: row.og_image,
+    indexEnabled: row.index_enabled !== 0,
+    keywords: row.keywords,
+  };
+}
+
 // ── Settings ──────────────────────────────────────────────────────────────────
 
 export async function getAdminSettings() {

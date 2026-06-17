@@ -17,6 +17,7 @@ export default function BlogPage() {
   return (
     <>
     <Seo
+      slug="blog"
       title="Blog | Dhanamitra Infotech LLP — Digital Solutions, Software & Business Growth"
       description="Explore Dhanamitra Infotech LLP's blog for insights on website development, custom software, digital strategy, SEO architecture and business technology for modern businesses."
       keywords={[

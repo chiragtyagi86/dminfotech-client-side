@@ -55,6 +55,9 @@ export const api = {
   getPages: () => apiFetch(`/pages`),
   getPage: (slug) => apiFetch(`/pages/${slug}`),
 
+  // SEO
+  getPageSeo: (type, slug) => apiFetch(`/seo/${type}/${slug}`),
+
   // Leads
   submitLead: (data) =>
     apiFetch("/leads", { method: "POST", body: JSON.stringify(data) }),

@@ -21,6 +21,7 @@ import internPortalRoutes from "./internPortal.routes";
 const router = Router();
 
 // Public
+router.use("/seo", seoRoutes);
 router.use("/leads", leadsRoutes);
 router.use("/blog", blogRoutes);
 router.use("/careers", careersRoutes);

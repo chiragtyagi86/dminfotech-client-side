@@ -5,6 +5,7 @@ export default function ContactPageWrapper() { return(
 
 <>
 <Seo
+    slug="contact"
     title="Contact Us | Dhanamitra Infotech LLP — Digital Solutions, Software & Business Growth"
     description="Get in touch with Dhanamitra Infotech LLP for website development, software solutions, IT placements, journal publishing and stock market training. Contact us today!"
     keywords={[

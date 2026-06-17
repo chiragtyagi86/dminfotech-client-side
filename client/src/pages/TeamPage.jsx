@@ -154,6 +154,7 @@ export default function TeamPage() {
   return (
     <>
       <Seo
+        slug="team"
         title="Our Team | Dhanamitra Infotech LLP — Digital Solutions, Software & Business Growth"
         description="Meet the passionate team behind Dhanamitra Infotech LLP, delivering innovative digital solutions, software development and business growth services with expertise and dedication."
         keywords={[
