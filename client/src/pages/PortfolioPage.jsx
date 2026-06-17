@@ -11,6 +11,7 @@ export default function PortfolioPage() {
   return (
     <>
     <Seo
+      slug="portfolio"
       title="Portfolio | Dhanamitra Infotech LLP — Digital Solutions, Software & Business Growth"
       description="Explore Dhanamitra Infotech LLP's portfolio showcasing our expertise in website development, custom software, IT placements, journal publishing and stock market training for modern businesses."
       keywords={[

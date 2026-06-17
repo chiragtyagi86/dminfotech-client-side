@@ -36,6 +36,20 @@ export async function adminUpdateEntitySeo(req: Request, res: Response): Promise
   }
 }
 
+export async function publicGetEntitySeo(req: Request, res: Response): Promise<void> {
+  try {
+    const { type, slug } = req.params;
+    res.json(await seoService.getPublicEntitySeo(type, slug));
+  } catch (err: any) {
+    if (err.status === 404) {
+      res.status(404).json({ message: err.message });
+      return;
+    }
+    console.error("[seo/publicGetEntitySeo]", err);
+    res.status(err.status || 500).json({ message: err.message || "Server error." });
+  }
+}
+
 // ── Settings ──────────────────────────────────────────────────────────────────
 
 export async function adminGetSettings(_req: Request, res: Response): Promise<void> {

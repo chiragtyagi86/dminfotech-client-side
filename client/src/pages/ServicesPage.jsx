@@ -13,6 +13,7 @@ export default function ServicesPage() {
   return (
     <>
     <Seo
+      slug="services"
       title="Services | Dhanamitra Infotech LLP — Digital Solutions, Software & Business Growth"
       description="Discover Dhanamitra Infotech LLP's comprehensive services including website development, custom software solutions, IT placements, journal publishing and stock market training for modern businesses."
       keywords={[

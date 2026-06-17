@@ -4,6 +4,7 @@ import { requireAdmin } from "../middleware/auth";
 import * as seo from "../controllers/seo.controller";
 
 const router = Router();
+router.get("/:type/:slug", seo.publicGetEntitySeo);
 router.get("/",              requireAdmin, seo.adminGetSeo);
 router.put("/",              requireAdmin, seo.adminUpdateGlobalSeo);
 router.put("/:type/:id",     requireAdmin, seo.adminUpdateEntitySeo);

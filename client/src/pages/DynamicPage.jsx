@@ -153,6 +153,7 @@ export default function DynamicPage() {
   return (
     <>
       <Seo
+        slug={pageData.slug}
         title={pageData.seoTitle || pageData.title}
         description={pageData.seoDescription || pageData.subtitle}
         keywords={pageData.keywords || []}
