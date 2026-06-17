@@ -73,6 +73,7 @@ jobs:
     name: 04 Security Audit
     runs-on: ubuntu-latest
     needs: backend-check
+    # FIX: audit findings are reported but must NOT block deployment.
     continue-on-error: true
 
     steps:
@@ -129,6 +130,8 @@ jobs:
           local-dir: ./client/dist/
           server-dir: ./staging.dmifotech.com/
           timeout: 120000
+          # To force a full re-upload once (if sync state drifts), add:
+          #   dangerous-clean-slate: true
           exclude: |
             **/.git*
             **/.git*/**
@@ -194,13 +197,18 @@ jobs:
           local-dir: ./client/dist/
           server-dir: ./dmifotech.com/
           timeout: 120000
+          # To force a full re-upload once (if sync state drifts), add:
+          #   dangerous-clean-slate: true
           exclude: |
             **/.git*
             **/.git*/**
             **/node_modules/**
             **/redketchup.zip
 
-      - name: Deploy Backend Dist to Production
+      # FIX: production now uploads the full ./server/ folder (same as the
+      # working staging deploy) so package.json AND tmp/restart.txt ship,
+      # which triggers the app restart and provides runtime files.
+      - name: Deploy Backend to Production
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -208,9 +216,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftp
           port: 21
-
-          # Upload ONLY server/dist contents
-          local-dir: ./server/dist/
+          local-dir: ./server/
           server-dir: ./api.dmifotech.com/
 
           timeout: 120000
@@ -221,5 +227,3 @@ jobs:
             **/.git*/**
             **/node_modules/**
             **/.env
-            **/uploads/**
-            uploads/**
