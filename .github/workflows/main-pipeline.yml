@@ -129,9 +129,8 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
+          protocol: ftp
           port: 21
-          security: loose
           local-dir: ./client/dist/
           server-dir: ./staging.dmifotech.com/
           timeout: 300000
@@ -147,9 +146,8 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
+          protocol: ftp
           port: 21
-          security: loose
           local-dir: ./server/dist/
           server-dir: ./staging-api.dmifotech.com/
           timeout: 300000
@@ -193,9 +191,8 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
+          protocol: ftp
           port: 21
-          security: loose
           local-dir: ./client/dist/
           server-dir: ./dmifotech.com/
           timeout: 300000
@@ -205,16 +202,15 @@ jobs:
             **/node_modules/**
             **/redketchup.zip
 
-      - name: Deploy Backend Dist to Production
+      - name: Deploy Backend to Production
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
+          protocol: ftp
           port: 21
-          security: loose
-          local-dir: ./server/dist/
+          local-dir: ./server/
           server-dir: ./api.dmifotech.com/
           timeout: 300000
           exclude: |
