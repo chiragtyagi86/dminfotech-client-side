@@ -22,7 +22,6 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const frontendReady = frontendDistExists();
 
-// Trust proxy for cPanel/LiteSpeed/Passenger
 app.set("trust proxy", 1);
 
 // Security
@@ -47,11 +46,6 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 // Cookies
 app.use(cookieParser());
 
-// Route order matters:
-// 1. Health, uploads and frontend assets are public and must never hit the API limiter.
-// 2. /api is the only rate-limited surface.
-// 3. The frontend catch-all is last so public pages get server-injected SEO meta.
-
 // Health check - no rate limit
 app.get("/health", (_req, res) => {
   res.json({
@@ -61,8 +55,28 @@ app.get("/health", (_req, res) => {
   });
 });
 
-// Uploads - no rate limit, before frontend fallback. fallthrough:false prevents
-// missing upload paths from returning the React HTML shell.
+// IMPORTANT: Force root "/" to render Home SEO before static middleware
+app.get("/", async (_req, res, next) => {
+  try {
+    const hasFrontend = await frontendReady;
+
+    if (!hasFrontend) {
+      res.status(404).json({ message: "Frontend build not found." });
+      return;
+    }
+
+    const html = await renderFrontendHtml("/home");
+
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+
+    res.send(html);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Uploads - no rate limit
 const uploadsPath = path.join(process.cwd(), "uploads");
 
 app.use(
@@ -82,8 +96,7 @@ app.get("/debug/uploads", (_req, res) => {
   });
 });
 
-// Frontend static assets - no rate limit. index:false keeps HTML requests going
-// to the renderer below so title/OG tags are injected server-side.
+// Frontend static assets - no rate limit
 app.use(
   express.static(getFrontendStaticPath(), {
     index: false,
