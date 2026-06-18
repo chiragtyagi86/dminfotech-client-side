@@ -76,7 +76,6 @@ jobs:
     name: 04 Security Audit
     runs-on: ubuntu-latest
     needs: backend-check
-    # FIX: audit findings are reported but must NOT block deployment.
     continue-on-error: true
 
     steps:
@@ -135,14 +134,11 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
+          protocol: ftp
           port: 21
-          security: loose
           local-dir: ./client/dist/
           server-dir: ./staging.dmifotech.com/
-          timeout: 120000
-          # To force a full re-upload once (if sync state drifts), add:
-          #   dangerous-clean-slate: true
+          timeout: 300000
           exclude: |
             **/.git*
             **/.git*/**
@@ -155,10 +151,9 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
+          protocol: ftp
           port: 21
-          security: loose
-          local-dir: ./server/deploy/
+          local-dir: ./server/dist/
           server-dir: ./staging-api.dmifotech.com/
           timeout: 300000
           dangerous-clean-slate: false
@@ -209,27 +204,24 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
+          protocol: ftp
           port: 21
-          security: loose
           local-dir: ./client/dist/
           server-dir: ./dmifotech.com/
-          timeout: 120000
-          # To force a full re-upload once (if sync state drifts), add:
-          #   dangerous-clean-slate: true
+          timeout: 300000
           exclude: |
             **/.git*
             **/.git*/**
             **/node_modules/**
             **/redketchup.zip
 
-      - name: Deploy Backend Runtime to Production
+      - name: Deploy Backend to Production
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
+          protocol: ftp
           port: 21
           security: loose
           local-dir: ./server/deploy/
@@ -244,4 +236,3 @@ jobs:
             **/.env
             **/uploads/**
             uploads/**
-            uploads/**/*
