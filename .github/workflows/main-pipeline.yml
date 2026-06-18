@@ -120,6 +120,8 @@ jobs:
           cd server
           npm ci
           npm run build
+          mkdir -p dist/public
+          cp -R ../client/dist/. dist/public/
 
       - name: Deploy Frontend to Staging
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
@@ -182,6 +184,8 @@ jobs:
           cd server
           npm ci
           npm run build
+          mkdir -p dist/public
+          cp -R ../client/dist/. dist/public/
 
       - name: Deploy Frontend to Production
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
