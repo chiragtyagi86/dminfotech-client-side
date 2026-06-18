@@ -47,6 +47,11 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 // Cookies
 app.use(cookieParser());
 
+// Route order matters:
+// 1. Health, uploads and frontend assets are public and must never hit the API limiter.
+// 2. /api is the only rate-limited surface.
+// 3. The frontend catch-all is last so public pages get server-injected SEO meta.
+
 // Health check - no rate limit
 app.get("/health", (_req, res) => {
   res.json({
@@ -56,7 +61,8 @@ app.get("/health", (_req, res) => {
   });
 });
 
-// Uploads - no rate limit, before frontend fallback
+// Uploads - no rate limit, before frontend fallback. fallthrough:false prevents
+// missing upload paths from returning the React HTML shell.
 const uploadsPath = path.join(process.cwd(), "uploads");
 
 app.use(
@@ -76,7 +82,8 @@ app.get("/debug/uploads", (_req, res) => {
   });
 });
 
-// Frontend static assets - no rate limit
+// Frontend static assets - no rate limit. index:false keeps HTML requests going
+// to the renderer below so title/OG tags are injected server-side.
 app.use(
   express.static(getFrontendStaticPath(), {
     index: false,
