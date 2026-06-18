@@ -2,6 +2,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { adminApi } from "../../lib/api";
 
+function resolvePreviewUrl(value = "") {
+  if (!value) return "";
+  if (/^https?:\/\//i.test(value)) return value;
+  const base = import.meta.env.VITE_API_URL || "";
+  return base ? `${base}${value}` : value;
+}
+
 function Field({ label, value, onChange, placeholder, multiline }) {
   const base = {
     fontFamily: "'DM Sans',sans-serif",
@@ -47,6 +54,57 @@ function Field({ label, value, onChange, placeholder, multiline }) {
           placeholder={placeholder}
         />
       )}
+    </div>
+  );
+}
+
+function OgImageUpload({ value, onUploaded, mediaKey = "" }) {
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleFile(file) {
+    if (!file) return;
+
+    try {
+      setUploading(true);
+      setError("");
+
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("mediaKey", mediaKey || `og_${Date.now()}`);
+
+      const res = await adminApi.uploadMedia(fd);
+      const payload = res?.data ?? res ?? {};
+      if (payload.filePath) onUploaded(payload.filePath);
+      else setError("Upload completed but no file path was returned.");
+    } catch (err) {
+      console.error(err);
+      setError(err?.message || "Upload failed.");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  const preview = resolvePreviewUrl(value);
+
+  return (
+    <div className="og-upload">
+      {preview ? (
+        <img src={preview} alt="OG preview" className="og-upload-preview" />
+      ) : null}
+      <label className="og-upload-btn">
+        {uploading ? "Uploading..." : value ? "Replace OG Image" : "Upload OG Image"}
+        <input
+          type="file"
+          accept="image/png,image/jpeg,image/jpg,image/webp"
+          disabled={uploading}
+          onChange={(e) => {
+            handleFile(e.target.files?.[0]);
+            e.target.value = "";
+          }}
+        />
+      </label>
+      {error && <span className="seo-error">{error}</span>}
     </div>
   );
 }
@@ -552,6 +610,42 @@ await adminApi.updateEntitySeo("page", row.id, row.seo);
           color:rgba(104,80,68,0.48);
         }
 
+        .og-upload{
+          display:flex;
+          align-items:center;
+          gap:10px;
+          flex-wrap:wrap;
+          margin-top:-10px;
+          margin-bottom:18px;
+        }
+
+        .og-upload-preview{
+          width:74px;
+          height:44px;
+          object-fit:cover;
+          border-radius:8px;
+          border:1px solid rgba(104,80,68,0.12);
+          background:#fff;
+        }
+
+        .og-upload-btn{
+          display:inline-flex;
+          align-items:center;
+          justify-content:center;
+          padding:8px 13px;
+          border-radius:8px;
+          border:1px dashed rgba(104,80,68,0.22);
+          background:#fff;
+          font-family:'DM Sans',sans-serif;
+          font-size:11.5px;
+          color:#3a405a;
+          cursor:pointer;
+        }
+
+        .og-upload-btn input{
+          display:none;
+        }
+
         @media (max-width: 1100px){
           .seo-card{
             padding:18px;
@@ -637,6 +731,11 @@ await adminApi.updateEntitySeo("page", row.id, row.seo);
                 value={global.defaultOgImage}
                 onChange={(v) => setGlobalField("defaultOgImage", v)}
                 placeholder="https://yourdomain.com/og-image.jpg"
+              />
+              <OgImageUpload
+                value={global.defaultOgImage}
+                mediaKey="default_og_image"
+                onUploaded={(url) => setGlobalField("defaultOgImage", url)}
               />
 
               <Field
@@ -790,6 +889,13 @@ await adminApi.updateEntitySeo("page", row.id, row.seo);
                                   setPageSeoField(page.id, "ogImage", e.target.value)
                                 }
                                 placeholder="https://yourdomain.com/og-image.jpg"
+                              />
+                              <OgImageUpload
+                                value={page.seo.ogImage}
+                                mediaKey={`page_og_${page.slug || page.id}`}
+                                onUploaded={(url) =>
+                                  setPageSeoField(page.id, "ogImage", url)
+                                }
                               />
                             </div>
 

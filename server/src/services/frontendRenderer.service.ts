@@ -42,7 +42,7 @@ const defaultSeo: SeoRoute = {
 const homeSeo: SeoRoute = {
   slug: "home",
   entityType: "page",
-  canonicalPath: "/home",
+  canonicalPath: "/",
   title: "Dhanamitra Infotech LLP | Website, Software & Digital Marketing Company",
   description:
     "Dhanamitra Infotech LLP delivers website development, software solutions, ERP systems, digital marketing, business automation and IT consulting services.",
@@ -188,10 +188,11 @@ function escapeHtml(value: unknown) {
 }
 
 function normalizePath(requestPath: string) {
-  const withoutQuery = requestPath.split("?")[0] || "/";
+  if (!requestPath || requestPath === "/") return "/home";
+  const withoutQuery = requestPath.split("?")[0] || "";
   const withLeadingSlash = withoutQuery.startsWith("/") ? withoutQuery : `/${withoutQuery}`;
   const clean = withLeadingSlash.replace(/\/{2,}/g, "/").replace(/\/+$/, "");
-  return clean || "/";
+  return clean || "/home";
 }
 
 function absoluteUrl(value: string | undefined, fallback = DEFAULT_OG_IMAGE) {
@@ -239,7 +240,7 @@ function pathToSeoLookup(requestPath: string) {
 async function resolveSeo(requestPath: string): Promise<SeoPayload> {
   const cleanPath = normalizePath(requestPath);
   const fallback = pathToSeoLookup(cleanPath);
-  const canonicalPath = cleanPath === "/" ? "/" : fallback.canonicalPath || cleanPath;
+  const canonicalPath = cleanPath === "/home" ? "/" : fallback.canonicalPath || cleanPath;
   const url = `${siteUrl()}${canonicalPath === "/" ? "" : canonicalPath}`;
 
   try {
