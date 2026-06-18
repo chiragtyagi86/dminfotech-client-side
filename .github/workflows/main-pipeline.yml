@@ -125,7 +125,7 @@ jobs:
           rm -rf deploy
           mkdir -p deploy/tmp
           cp package.json package-lock.json deploy/
-          cp -R dist deploy/dist
+          cp -R dist/. deploy/
           date > deploy/tmp/restart.txt
 
       - name: Deploy Frontend to Staging
@@ -195,7 +195,7 @@ jobs:
           rm -rf deploy
           mkdir -p deploy/tmp
           cp package.json package-lock.json deploy/
-          cp -R dist deploy/dist
+          cp -R dist/. deploy/
           date > deploy/tmp/restart.txt
 
       - name: Deploy Frontend to Production

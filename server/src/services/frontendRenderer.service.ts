@@ -1,4 +1,5 @@
 import fs from "fs/promises";
+import fsSync from "fs";
 import path from "path";
 import { getPublicEntitySeo } from "./seo.service";
 
@@ -88,9 +89,18 @@ const fallbackByPath: Record<string, Omit<SeoPayload, "url"> & { slug?: string; 
 };
 
 function getFrontendDistPath() {
+  const candidates = [
+    process.env.FRONTEND_DIST_PATH,
+    path.resolve(process.cwd(), "public"),
+    path.resolve(process.cwd(), "dist", "public"),
+    path.resolve(process.cwd(), "..", "client", "dist"),
+    path.resolve(__dirname, "..", "public"),
+  ].filter(Boolean) as string[];
+
   return (
-    process.env.FRONTEND_DIST_PATH ||
-    path.resolve(__dirname, "public")
+    candidates.find((candidate) =>
+      fsSync.existsSync(path.join(candidate, "index.html"))
+    ) || candidates[0]
   );
 }
 
