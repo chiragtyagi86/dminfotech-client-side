@@ -11,16 +11,52 @@ type SeoPayload = {
   keywords?: string;
   indexEnabled?: boolean;
   type?: string;
+  ogTitle?: string;
+  ogDescription?: string;
+  ogImageAlt?: string;
+  twitterTitle?: string;
+  twitterDescription?: string;
+  twitterImage?: string;
 };
 
-const fallbackByPath: Record<string, Omit<SeoPayload, "url"> & { slug?: string; entityType?: "page" | "blog" }> = {
+type SeoRoute = Omit<SeoPayload, "url"> & {
+  slug?: string;
+  entityType?: "page" | "blog";
+  canonicalPath?: string;
+};
+
+const DEFAULT_OG_IMAGE = "https://dmifotech.com/ticket.png";
+const DEFAULT_OG_ALT = "Dhanamitra Infotech LLP digital solutions and technology services";
+
+const defaultSeo: SeoRoute = {
+  title: "Dhanamitra Infotech LLP | Website, Software & Digital Marketing Company",
+  description:
+    "Dhanamitra Infotech LLP delivers website development, software solutions, ERP systems, digital marketing, business automation and IT consulting services.",
+  image: DEFAULT_OG_IMAGE,
+  ogImageAlt: DEFAULT_OG_ALT,
+  entityType: "page",
+  slug: "home",
+  canonicalPath: "/",
+};
+
+const homeSeo: SeoRoute = {
+  slug: "home",
+  entityType: "page",
+  canonicalPath: "/home",
+  title: "Dhanamitra Infotech LLP | Website, Software & Digital Marketing Company",
+  description:
+    "Dhanamitra Infotech LLP delivers website development, software solutions, ERP systems, digital marketing, business automation and IT consulting services.",
+  image: DEFAULT_OG_IMAGE,
+  ogImageAlt: DEFAULT_OG_ALT,
+};
+
+const fallbackByPath: Record<string, SeoRoute> = {
   "/": {
-    slug: "home",
-    entityType: "page",
-    title: "Dhanamitra Infotech LLP — Digital Solutions, Software & Business Growth",
-    description:
-      "Dhanamitra Infotech LLP is an ISO 9001:2015 certified digital solutions company delivering website development, custom software, IT placements, journal publishing and stock market training for modern businesses.",
-    image: "/logo.svg",
+    ...homeSeo,
+    canonicalPath: "/",
+  },
+  "/home": {
+    ...homeSeo,
   },
   "/about": {
     slug: "about",
@@ -28,7 +64,8 @@ const fallbackByPath: Record<string, Omit<SeoPayload, "url"> & { slug?: string; 
     title: "About | Dhanamitra Infotech LLP — Digital Solutions, Software & Business Growth",
     description:
       "Dhanamitra Infotech LLP is an ISO 9001:2015 certified digital solutions company delivering website development, custom software, IT placements, journal publishing and stock market training for modern businesses.",
-    image: "/logo.svg",
+    image: DEFAULT_OG_IMAGE,
+    ogImageAlt: "About Dhanamitra Infotech LLP digital solutions company",
   },
   "/services": {
     slug: "services",
@@ -36,7 +73,8 @@ const fallbackByPath: Record<string, Omit<SeoPayload, "url"> & { slug?: string; 
     title: "Services | Dhanamitra Infotech LLP — Digital Solutions, Software & Business Growth",
     description:
       "Discover Dhanamitra Infotech LLP's comprehensive services including website development, custom software solutions, IT placements, journal publishing and stock market training for modern businesses.",
-    image: "/logo.svg",
+    image: DEFAULT_OG_IMAGE,
+    ogImageAlt: "Dhanamitra Infotech LLP services for web software and digital growth",
   },
   "/portfolio": {
     slug: "portfolio",
@@ -44,7 +82,8 @@ const fallbackByPath: Record<string, Omit<SeoPayload, "url"> & { slug?: string; 
     title: "Portfolio | Dhanamitra Infotech LLP — Digital Solutions, Software & Business Growth",
     description:
       "Explore Dhanamitra Infotech LLP's portfolio showcasing our expertise in website development, custom software, IT placements, journal publishing and stock market training for modern businesses.",
-    image: "/logo.svg",
+    image: DEFAULT_OG_IMAGE,
+    ogImageAlt: "Dhanamitra Infotech LLP portfolio and technology projects",
   },
   "/blog": {
     slug: "blog",
@@ -52,7 +91,8 @@ const fallbackByPath: Record<string, Omit<SeoPayload, "url"> & { slug?: string; 
     title: "Blog | Dhanamitra Infotech LLP — Digital Solutions, Software & Business Growth",
     description:
       "Explore Dhanamitra Infotech LLP's blog for insights on website development, custom software, digital strategy, SEO architecture and business technology for modern businesses.",
-    image: "/logo.svg",
+    image: DEFAULT_OG_IMAGE,
+    ogImageAlt: "Dhanamitra Infotech LLP blog and digital insights",
   },
   "/careers": {
     slug: "careers",
@@ -60,7 +100,8 @@ const fallbackByPath: Record<string, Omit<SeoPayload, "url"> & { slug?: string; 
     title: "Careers | Dhanamitra Infotech LLP — Join Our Team of Digital Innovators",
     description:
       "Explore career opportunities at Dhanamitra Infotech LLP, an ISO 9001:2015 certified digital solutions company. Join us to work on real projects, grow your skills, and make an impact in the tech industry.",
-    image: "/logo.svg",
+    image: DEFAULT_OG_IMAGE,
+    ogImageAlt: "Careers at Dhanamitra Infotech LLP",
   },
   "/contact": {
     slug: "contact",
@@ -68,7 +109,8 @@ const fallbackByPath: Record<string, Omit<SeoPayload, "url"> & { slug?: string; 
     title: "Contact Us | Dhanamitra Infotech LLP — Digital Solutions, Software & Business Growth",
     description:
       "Get in touch with Dhanamitra Infotech LLP for website development, software solutions, IT placements, journal publishing and stock market training. Contact us today!",
-    image: "/logo.svg",
+    image: DEFAULT_OG_IMAGE,
+    ogImageAlt: "Contact Dhanamitra Infotech LLP",
   },
   "/team": {
     slug: "team",
@@ -76,7 +118,8 @@ const fallbackByPath: Record<string, Omit<SeoPayload, "url"> & { slug?: string; 
     title: "Our Team | Dhanamitra Infotech LLP — Digital Solutions, Software & Business Growth",
     description:
       "Meet the passionate team behind Dhanamitra Infotech LLP, delivering innovative digital solutions, software development and business growth services with expertise and dedication.",
-    image: "/logo.svg",
+    image: DEFAULT_OG_IMAGE,
+    ogImageAlt: "Dhanamitra Infotech LLP team",
   },
   "/testimonials": {
     slug: "testimonials",
@@ -84,7 +127,35 @@ const fallbackByPath: Record<string, Omit<SeoPayload, "url"> & { slug?: string; 
     title: "Client Testimonials | Dhanamitra Infotech LLP — Digital Solutions, Software & Business Growth",
     description:
       "Discover what our clients have to say about their experience working with Dhanamitra Infotech LLP. Read real testimonials highlighting our commitment to excellence in digital solutions, software development, and business growth.",
-    image: "/logo.svg",
+    image: DEFAULT_OG_IMAGE,
+    ogImageAlt: "Client testimonials for Dhanamitra Infotech LLP",
+  },
+  "/privacy-policy": {
+    slug: "privacy-policy",
+    entityType: "page",
+    title: "Privacy Policy | Dhanamitra Infotech LLP",
+    description:
+      "Read the privacy policy for Dhanamitra Infotech LLP, including how we collect, use and protect information shared with our website and services.",
+    image: DEFAULT_OG_IMAGE,
+    ogImageAlt: DEFAULT_OG_ALT,
+  },
+  "/terms-and-conditions": {
+    slug: "terms-and-conditions",
+    entityType: "page",
+    title: "Terms and Conditions | Dhanamitra Infotech LLP",
+    description:
+      "Read the terms and conditions for using Dhanamitra Infotech LLP services, website and digital platforms.",
+    image: DEFAULT_OG_IMAGE,
+    ogImageAlt: DEFAULT_OG_ALT,
+  },
+  "/refund-policy": {
+    slug: "refund-policy",
+    entityType: "page",
+    title: "Refund Policy | Dhanamitra Infotech LLP",
+    description:
+      "Read the refund policy for Dhanamitra Infotech LLP products, services and digital solutions.",
+    image: DEFAULT_OG_IMAGE,
+    ogImageAlt: DEFAULT_OG_ALT,
   },
 };
 
@@ -117,11 +188,13 @@ function escapeHtml(value: unknown) {
 }
 
 function normalizePath(requestPath: string) {
-  const clean = requestPath.split("?")[0].replace(/\/+$/, "");
+  const withoutQuery = requestPath.split("?")[0] || "/";
+  const withLeadingSlash = withoutQuery.startsWith("/") ? withoutQuery : `/${withoutQuery}`;
+  const clean = withLeadingSlash.replace(/\/{2,}/g, "/").replace(/\/+$/, "");
   return clean || "/";
 }
 
-function absoluteUrl(value: string | undefined, fallback = "/logo.svg") {
+function absoluteUrl(value: string | undefined, fallback = DEFAULT_OG_IMAGE) {
   const raw = value || fallback;
   if (/^https?:\/\//i.test(raw)) return raw;
   return `${siteUrl()}/${raw.replace(/^\/+/, "")}`;
@@ -142,7 +215,8 @@ function pathToSeoLookup(requestPath: string) {
       title: "Dhanamitra Infotech LLP Blog",
       description:
         "Read our latest insights and updates on digital solutions, software development, IT placements, journal publishing, and stock market training.",
-      image: "/logo.svg",
+      image: DEFAULT_OG_IMAGE,
+      ogImageAlt: "Dhanamitra Infotech LLP blog article",
     };
   }
 
@@ -154,29 +228,42 @@ function pathToSeoLookup(requestPath: string) {
       title: "Dhanamitra Infotech LLP",
       description:
         "Dhanamitra Infotech LLP delivers website development, software solutions, ERP systems, digital marketing and business automation services.",
-      image: "/logo.svg",
+      image: DEFAULT_OG_IMAGE,
+      ogImageAlt: DEFAULT_OG_ALT,
     };
   }
 
-  return fallbackByPath["/"];
+  return defaultSeo;
 }
 
 async function resolveSeo(requestPath: string): Promise<SeoPayload> {
   const cleanPath = normalizePath(requestPath);
   const fallback = pathToSeoLookup(cleanPath);
-  const url = `${siteUrl()}${cleanPath === "/" ? "" : cleanPath}`;
+  const canonicalPath = cleanPath === "/" ? "/" : fallback.canonicalPath || cleanPath;
+  const url = `${siteUrl()}${canonicalPath === "/" ? "" : canonicalPath}`;
 
   try {
     if (fallback.slug && fallback.entityType) {
       const cmsSeo = await getPublicEntitySeo(fallback.entityType, fallback.slug);
+      const title = cmsSeo.metaTitle || fallback.title;
+      const description = cmsSeo.metaDescription || fallback.description;
+      const ogTitle = cmsSeo.ogTitle || title;
+      const ogDescription = cmsSeo.ogDescription || description;
+      const image = cmsSeo.ogImage || fallback.image;
       return {
-        title: cmsSeo.ogTitle || cmsSeo.metaTitle || fallback.title,
-        description: cmsSeo.ogDescription || cmsSeo.metaDescription || fallback.description,
-        image: cmsSeo.ogImage || fallback.image,
+        title,
+        description,
+        ogTitle,
+        ogDescription,
+        image,
         keywords: cmsSeo.keywords || fallback.keywords,
         indexEnabled: cmsSeo.indexEnabled !== false,
         type: fallback.entityType === "blog" ? "article" : "website",
-        url: cmsSeo.canonicalUrl || url,
+        url: cleanPath === "/" ? url : cmsSeo.canonicalUrl || url,
+        ogImageAlt: fallback.ogImageAlt || DEFAULT_OG_ALT,
+        twitterTitle: fallback.twitterTitle || ogTitle,
+        twitterDescription: fallback.twitterDescription || ogDescription,
+        twitterImage: fallback.twitterImage || image,
       };
     }
   } catch {
@@ -191,13 +278,25 @@ async function resolveSeo(requestPath: string): Promise<SeoPayload> {
     indexEnabled: fallback.indexEnabled,
     type: fallback.entityType === "blog" ? "article" : "website",
     url,
+    ogTitle: fallback.ogTitle || fallback.title,
+    ogDescription: fallback.ogDescription || fallback.description,
+    ogImageAlt: fallback.ogImageAlt || DEFAULT_OG_ALT,
+    twitterTitle: fallback.twitterTitle || fallback.ogTitle || fallback.title,
+    twitterDescription: fallback.twitterDescription || fallback.ogDescription || fallback.description,
+    twitterImage: fallback.twitterImage || fallback.image,
   };
 }
 
 function metaBlock(seo: SeoPayload) {
   const title = escapeHtml(seo.title);
   const description = escapeHtml(seo.description);
+  const ogTitle = escapeHtml(seo.ogTitle || seo.title);
+  const ogDescription = escapeHtml(seo.ogDescription || seo.description);
   const image = escapeHtml(absoluteUrl(seo.image));
+  const imageAlt = escapeHtml(seo.ogImageAlt || DEFAULT_OG_ALT);
+  const twitterTitle = escapeHtml(seo.twitterTitle || seo.ogTitle || seo.title);
+  const twitterDescription = escapeHtml(seo.twitterDescription || seo.ogDescription || seo.description);
+  const twitterImage = escapeHtml(absoluteUrl(seo.twitterImage || seo.image));
   const url = escapeHtml(seo.url);
   const robots = seo.indexEnabled === false ? "noindex, nofollow" : "index, follow";
   const keywords = seo.keywords ? escapeHtml(seo.keywords) : "";
@@ -210,14 +309,15 @@ function metaBlock(seo: SeoPayload) {
     `<link rel="canonical" href="${url}" />`,
     `<meta property="og:type" content="${seo.type || "website"}" />`,
     `<meta property="og:site_name" content="Dhanamitra Infotech LLP" />`,
-    `<meta property="og:title" content="${title}" />`,
-    `<meta property="og:description" content="${description}" />`,
+    `<meta property="og:title" content="${ogTitle}" />`,
+    `<meta property="og:description" content="${ogDescription}" />`,
     `<meta property="og:url" content="${url}" />`,
     `<meta property="og:image" content="${image}" />`,
+    `<meta property="og:image:alt" content="${imageAlt}" />`,
     `<meta name="twitter:card" content="summary_large_image" />`,
-    `<meta name="twitter:title" content="${title}" />`,
-    `<meta name="twitter:description" content="${description}" />`,
-    `<meta name="twitter:image" content="${image}" />`,
+    `<meta name="twitter:title" content="${twitterTitle}" />`,
+    `<meta name="twitter:description" content="${twitterDescription}" />`,
+    `<meta name="twitter:image" content="${twitterImage}" />`,
   ]
     .filter(Boolean)
     .map((line) => `  ${line}`)

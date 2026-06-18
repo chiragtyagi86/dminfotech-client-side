@@ -6,7 +6,49 @@ import fs from "fs/promises";
 
 // ── SEO ───────────────────────────────────────────────────────────────────────
 
+const PUBLIC_PAGE_SEO_ROUTES = [
+  { slug: "home", title: "Home", description: "Dhanamitra Infotech LLP homepage." },
+  { slug: "about", title: "About", description: "About Dhanamitra Infotech LLP." },
+  { slug: "services", title: "Services", description: "Services offered by Dhanamitra Infotech LLP." },
+  { slug: "portfolio", title: "Portfolio", description: "Dhanamitra Infotech LLP portfolio and case studies." },
+  { slug: "blog", title: "Blog", description: "Insights and articles from Dhanamitra Infotech LLP." },
+  { slug: "team", title: "Team", description: "Meet the Dhanamitra Infotech LLP team." },
+  { slug: "careers", title: "Careers", description: "Career opportunities at Dhanamitra Infotech LLP." },
+  { slug: "contact", title: "Contact", description: "Contact Dhanamitra Infotech LLP." },
+  { slug: "testimonials", title: "Testimonials", description: "Client testimonials for Dhanamitra Infotech LLP." },
+  { slug: "privacy-policy", title: "Privacy Policy", description: "Privacy policy for Dhanamitra Infotech LLP." },
+  { slug: "terms-and-conditions", title: "Terms and Conditions", description: "Terms and conditions for Dhanamitra Infotech LLP." },
+  { slug: "refund-policy", title: "Refund Policy", description: "Refund policy for Dhanamitra Infotech LLP." },
+];
+
+async function ensurePublicSeoPages() {
+  for (const page of PUBLIC_PAGE_SEO_ROUTES) {
+    const [existing] = await db.query<any[]>(
+      "SELECT id FROM pages WHERE slug = ? LIMIT 1",
+      [page.slug]
+    );
+
+    if (existing.length) {
+      await db.query(
+        `UPDATE pages
+         SET title = COALESCE(NULLIF(title, ''), ?),
+             description = COALESCE(NULLIF(description, ''), ?),
+             is_published = true
+         WHERE slug = ?`,
+        [page.title, page.description, page.slug]
+      );
+    } else {
+      await db.query(
+        "INSERT INTO pages (slug, title, description, content, is_published) VALUES (?, ?, ?, ?, true)",
+        [page.slug, page.title, page.description, JSON.stringify({ sections: [] })]
+      );
+    }
+  }
+}
+
 export async function getAdminSeo() {
+  await ensurePublicSeoPages();
+
   const [settingsRows] = await db.query<any[]>(
     "SELECT setting_key, setting_value FROM seo_settings ORDER BY setting_key"
   );
@@ -62,6 +104,8 @@ export async function updateGlobalSeo(body: any): Promise<void> {
 }
 
 export async function updateEntitySeo(type: string, id: string, body: any): Promise<void> {
+  if (type === "page") await ensurePublicSeoPages();
+
   if (!["page", "blog"].includes(type))
     throw Object.assign(new Error("Invalid type. Must be 'page' or 'blog'."), { status: 400 });
 
@@ -95,6 +139,8 @@ export async function updateEntitySeo(type: string, id: string, body: any): Prom
 }
 
 export async function getPublicEntitySeo(type: string, slug: string) {
+  if (type === "page") await ensurePublicSeoPages();
+
   if (!["page", "blog"].includes(type))
     throw Object.assign(new Error("Invalid type. Must be 'page' or 'blog'."), { status: 400 });
 
