@@ -331,9 +331,157 @@ function stripManagedMeta(html: string) {
     .replace(/\s*<meta name="description"[\s\S]*?>/gi, "")
     .replace(/\s*<meta name="robots"[\s\S]*?>/gi, "")
     .replace(/\s*<meta name="keywords"[\s\S]*?>/gi, "")
-    .replace(/\s*<link rel="canonical"[\s\S]*?>/gi, "")
+    // Attribute-order-independent: strips both `<link rel="canonical" href>`
+    // and `<link href rel="canonical">` so we never emit duplicate canonicals.
+    .replace(/\s*<link[^>]*rel=["']canonical["'][^>]*>/gi, "")
     .replace(/\s*<meta property="og:[\s\S]*?>/gi, "")
-    .replace(/\s*<meta name="twitter:[\s\S]*?>/gi, "");
+    .replace(/\s*<meta name="twitter:[\s\S]*?>/gi, "")
+    // Drop any previously-injected JSON-LD so re-renders never stack schema.
+    .replace(/\s*<script type="application\/ld\+json">[\s\S]*?<\/script>/gi, "");
+}
+
+// ── Server-side JSON-LD (crawler-visible: works without JS) ──
+// Mirrors client config so search engines + AI engines read the brand
+// entity, local-pack signals and FAQs from the raw HTML.
+const SCHEMA_SITE = {
+  name: "Dhanamitra Infotech LLP",
+  shortName: "DMIFOTECH",
+  phone: "+91-9458766648",
+  email: "info@dmifotech.com",
+  priceRange: "₹₹",
+  openingHours: "Mo-Sa 10:00-19:00",
+  foundingDate: "2023",
+  address: {
+    streetAddress: "O-912, Gaur City Center, Sector 4",
+    addressLocality: "Greater Noida West",
+    addressRegion: "Uttar Pradesh",
+    postalCode: "201318",
+    addressCountry: "IN",
+  },
+  geo: { latitude: "28.6076", longitude: "77.4286" },
+  areaServed: ["Greater Noida", "Noida", "Delhi NCR", "Ghaziabad", "India"],
+  sameAs: [
+    "https://www.facebook.com/people/dmifotech/61570497154705/",
+    "https://www.linkedin.com/company/dmifotech/",
+    "https://www.instagram.com/dmifotech/",
+  ],
+  knowsAbout: [
+    "Website Development",
+    "Digital Marketing",
+    "ERP Software Development",
+    "Custom Software Solutions",
+    "IT Placements",
+  ],
+};
+
+const HOME_FAQS = [
+  {
+    question: "What services does Dhanamitra Infotech LLP offer?",
+    answer:
+      "Dhanamitra Infotech LLP offers website development, digital marketing, ERP software development, custom software solutions and IT placements. We are an ISO 9001:2015 certified company serving startups and growing businesses.",
+  },
+  {
+    question: "Where is Dhanamitra Infotech LLP located?",
+    answer:
+      "Our office is at O-912, Gaur City Center, Sector 4, Greater Noida West, Uttar Pradesh 201318. We serve clients across Greater Noida, Noida, Delhi NCR, Ghaziabad and all of India.",
+  },
+  {
+    question: "Who is the best website developer in Greater Noida?",
+    answer:
+      "Dhanamitra Infotech LLP is a leading website development company in Greater Noida West, building fast, responsive and SEO-friendly websites for businesses across Delhi NCR.",
+  },
+  {
+    question: "Do you build custom ERP software?",
+    answer:
+      "Yes. We design and develop custom ERP software tailored to your business processes, including inventory, billing, CRM, HR and reporting modules.",
+  },
+];
+
+function buildSchemaGraph(requestPath: string) {
+  const base = siteUrl();
+  const orgId = `${base}/#organization`;
+  const postalAddress = {
+    "@type": "PostalAddress",
+    ...SCHEMA_SITE.address,
+  };
+
+  const organization = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": orgId,
+    name: SCHEMA_SITE.name,
+    alternateName: SCHEMA_SITE.shortName,
+    url: base,
+    logo: `${base}/logo.svg`,
+    email: SCHEMA_SITE.email,
+    telephone: SCHEMA_SITE.phone,
+    foundingDate: SCHEMA_SITE.foundingDate,
+    address: postalAddress,
+    areaServed: SCHEMA_SITE.areaServed,
+    sameAs: SCHEMA_SITE.sameAs,
+    knowsAbout: SCHEMA_SITE.knowsAbout,
+  };
+
+  const localBusiness = {
+    "@context": "https://schema.org",
+    "@type": "ProfessionalService",
+    "@id": `${base}/#localbusiness`,
+    name: SCHEMA_SITE.name,
+    url: base,
+    image: `${base}/logo.svg`,
+    telephone: SCHEMA_SITE.phone,
+    email: SCHEMA_SITE.email,
+    priceRange: SCHEMA_SITE.priceRange,
+    address: postalAddress,
+    geo: { "@type": "GeoCoordinates", ...SCHEMA_SITE.geo },
+    areaServed: SCHEMA_SITE.areaServed,
+    openingHours: SCHEMA_SITE.openingHours,
+    sameAs: SCHEMA_SITE.sameAs,
+    parentOrganization: { "@id": orgId },
+  };
+
+  const website = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": `${base}/#website`,
+    url: base,
+    name: SCHEMA_SITE.name,
+    publisher: { "@id": orgId },
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${base}/blog?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
+  };
+
+  const graph: Record<string, unknown>[] = [organization, localBusiness, website];
+
+  const clean = normalizePath(requestPath);
+  if (clean === "/home" || clean === "/") {
+    graph.push({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: HOME_FAQS.map((f) => ({
+        "@type": "Question",
+        name: f.question,
+        acceptedAnswer: { "@type": "Answer", text: f.answer },
+      })),
+    });
+  }
+
+  return graph;
+}
+
+function schemaBlock(requestPath: string) {
+  return buildSchemaGraph(requestPath)
+    .map(
+      (node) =>
+        `  <script type="application/ld+json">${JSON.stringify(node)}</script>`
+    )
+    .join("\n");
 }
 
 export async function frontendDistExists() {
@@ -352,5 +500,6 @@ export function getFrontendStaticPath() {
 export async function renderFrontendHtml(requestPath: string) {
   const html = await fs.readFile(path.join(getFrontendDistPath(), "index.html"), "utf8");
   const seo = await resolveSeo(requestPath);
-  return stripManagedMeta(html).replace("</head>", `${metaBlock(seo)}\n</head>`);
+  const head = `${metaBlock(seo)}\n${schemaBlock(requestPath)}\n`;
+  return stripManagedMeta(html).replace("</head>", `${head}</head>`);
 }
