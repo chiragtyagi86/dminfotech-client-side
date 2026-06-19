@@ -62,6 +62,22 @@ function ScrollToTop() {
   return null;
 }
 
+// Send a GA4 page_view on every client-side route change (SPA navigation
+// doesn't reload the page, so gtag only auto-counts the first load).
+function AnalyticsTracker() {
+  const { pathname, search } = useLocation();
+  useEffect(() => {
+    if (typeof window.gtag === "function") {
+      window.gtag("event", "page_view", {
+        page_path: pathname + search,
+        page_location: window.location.href,
+        page_title: document.title,
+      });
+    }
+  }, [pathname, search]);
+  return null;
+}
+
 function NotFoundPage() {
   return (
     <div style={{ minHeight: "80vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "var(--color-bg)", textAlign: "center", padding: 40 }}>
@@ -158,6 +174,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
+      <AnalyticsTracker />
       <AppShell />
     </BrowserRouter>
   );
