@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
+import GlobalSchema from "./components/common/GlobalSchema";
 
 // Public pages
 import HomePage            from "./pages/HomePage";
@@ -91,6 +92,7 @@ function AppShell() {
 
   return (
     <>
+      {!isAdmin && !isIntern && <GlobalSchema />}
       {!isAdmin && !isIntern && <Header />}
       <Routes>
 

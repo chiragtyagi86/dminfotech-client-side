@@ -5,6 +5,7 @@ import { api } from "../lib/api";
 import Container from "../components/common/Container";
 import CTASection from "../components/home/CtaSection";
 import Seo from "../components/common/Seo";
+import { serviceSchema, breadcrumbSchema } from "../lib/structuredData";
 
 function parseContent(raw = "") {
   if (!raw) return {};
@@ -64,6 +65,20 @@ export default function ServiceDetailPage() {
       keywords={[service.category, ...(content.features || []), ...(content.tags || [])].filter(Boolean)}
       image={service.image || "/logo.png"}
       url={`/services/${service.slug}`}
+      jsonLd={[
+        serviceSchema({
+          name: service.title,
+          description: service.short_desc || content.intro || service.description,
+          url: `/services/${service.slug}`,
+          image: service.image,
+          category: service.category,
+        }),
+        breadcrumbSchema([
+          { name: "Home", path: "/" },
+          { name: "Services", path: "/services" },
+          { name: service.title, path: `/services/${service.slug}` },
+        ]),
+      ]}
     />
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap');
