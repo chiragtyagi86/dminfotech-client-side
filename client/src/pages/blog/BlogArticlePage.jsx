@@ -4,6 +4,7 @@ import { useApi } from "../../lib/useApi";
 import { api, formatDate } from "../../lib/api";
 import Container from "../../components/common/Container";
 import Seo from "../../components/common/Seo";
+import { articleSchema, breadcrumbSchema } from "../../lib/structuredData";
 
 export default function BlogArticlePage() {
   const { slug } = useParams();
@@ -38,6 +39,24 @@ export default function BlogArticlePage() {
       keywords={[post.category, ...(post.tags || [])].filter(Boolean)}
       image={post.cover_image || "/logo.png"}
       url={`/blog/${post.slug}`}
+      type="article"
+      jsonLd={[
+        articleSchema({
+          title: post.title,
+          description: post.excerpt || post.description,
+          url: `/blog/${post.slug}`,
+          image: post.cover_image,
+          datePublished: post.published_at,
+          dateModified: post.updated_at || post.published_at,
+          author: post.author?.name,
+          category: post.category,
+        }),
+        breadcrumbSchema([
+          { name: "Home", path: "/" },
+          { name: "Blog", path: "/blog" },
+          { name: post.title, path: `/blog/${post.slug}` },
+        ]),
+      ]}
     />
     <main>
       <style>{`

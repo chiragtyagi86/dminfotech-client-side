@@ -5,6 +5,7 @@ import { api } from "../lib/api";
 import Container from "../components/common/Container";
 import CTASection from "../components/home/CtaSection";
 import Seo from "../components/common/Seo";
+import { breadcrumbSchema } from "../lib/structuredData";
 
 function parseContent(raw = "") {
   if (!raw) return {};
@@ -63,6 +64,13 @@ export default function PortfolioDetailPage() {
       keywords={[item.category, c.industry, ...(c.services || [])].filter(Boolean)}
       image={item.image || c.image || "/logo.png"}
       url={`/portfolio/${item.slug}`}
+      jsonLd={[
+        breadcrumbSchema([
+          { name: "Home", path: "/" },
+          { name: "Portfolio", path: "/portfolio" },
+          { name: item.title, path: `/portfolio/${item.slug}` },
+        ]),
+      ]}
     />
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=DM+Sans:wght@300;400;500&display=swap');

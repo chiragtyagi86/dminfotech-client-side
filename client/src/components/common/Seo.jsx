@@ -13,6 +13,7 @@ export default function Seo({
   entityType = "page",
   slug = "",
   indexEnabled = true,
+  jsonLd = [],
 }) {
   const { siteConfig } = useSiteConfig();
   const [cmsSeo, setCmsSeo] = useState(null);
@@ -108,6 +109,14 @@ export default function Seo({
       <meta name="twitter:title" content={pageTitle} />
       <meta name="twitter:description" content={pageDescription} />
       <meta name="twitter:image" content={fullImage} />
+
+      {(Array.isArray(jsonLd) ? jsonLd : [jsonLd])
+        .filter(Boolean)
+        .map((schema, i) => (
+          <script key={i} type="application/ld+json">
+            {JSON.stringify(schema)}
+          </script>
+        ))}
     </Helmet>
   );
 }
