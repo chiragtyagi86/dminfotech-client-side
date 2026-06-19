@@ -28,6 +28,12 @@ app.set("trust proxy", 1);
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
+    // Force HTTPS for 1 year (incl. subdomains) — SEO/security best practice.
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true,
+    },
   })
 );
 

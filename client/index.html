@@ -4,14 +4,20 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Primary SEO (fallback before React/Helmet hydrates) -->
-  <title>Dhanamitra Infotech LLP — Best Website Developer, Digital Marketing & ERP Software Company in Greater Noida</title>
-  <meta name="description" content="Dhanamitra Infotech LLP is an ISO 9001:2015 certified website development, digital marketing and ERP software company in Greater Noida West, Delhi NCR. Custom software, web design and business automation for growing brands." />
+  <!-- Preconnect + non-render-blocking fonts (cuts FCP/LCP vs CSS @import) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" />
+
+  <!-- Primary SEO (fallback before React/Helmet hydrates).
+       NOTE: canonical is set per-page by Seo.jsx (Helmet) — do NOT add a
+       static canonical here or it produces duplicate canonical tags. -->
+  <title>Dhanamitra Infotech LLP — Web, Digital Marketing & ERP</title>
+  <meta name="description" content="Dhanamitra Infotech LLP — ISO 9001:2015 certified website development, digital marketing & ERP software company in Greater Noida West, Delhi NCR. Custom software & business automation for growing brands." />
   <meta name="keywords" content="best website developer, website development company, digital marketing agency, ERP software development, custom software, Greater Noida, Delhi NCR, Dhanamitra Infotech LLP" />
   <meta name="author" content="Dhanamitra Infotech LLP" />
   <meta name="robots" content="index, follow" />
   <meta name="theme-color" content="#1B2A4A" />
-  <link rel="canonical" href="https://dmifotech.com/" />
 
   <!-- Open Graph / social fallback -->
   <meta property="og:type" content="website" />
