@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
+import fs from "fs";
+import path from "path";
 import { InternAuthRequest } from "../middleware/internAuth";
 import * as internships from "../services/internships.service";
+import { sendCertificatePdf, sendReportPdf } from "../services/internPdf.service";
 
 const isProd = process.env.NODE_ENV === "production";
 
@@ -64,6 +67,45 @@ export async function dashboard(req: InternAuthRequest, res: Response): Promise<
     console.error("[internPortal/dashboard]", err);
     res.status(500).json({ message: "Server error." });
   }
+}
+
+export async function history(req: InternAuthRequest, res: Response): Promise<void> {
+  try {
+    const type = req.params.type as "reports" | "tasks" | "attendance";
+    if (!(["reports", "tasks", "attendance"] as string[]).includes(type)) {
+      res.status(400).json({ message: "Invalid history type." });
+      return;
+    }
+    res.json(await internships.getInternHistory(req.intern!.id, type));
+  } catch (err: any) {
+    res.status(err.status || 500).json({ message: err.message || "Server error." });
+  }
+}
+
+export async function downloadReport(req: InternAuthRequest, res: Response): Promise<void> {
+  try {
+    sendReportPdf(res, await internships.getInternReport(req.intern!.id, req.params.id));
+  } catch (err: any) {
+    res.status(err.status || 500).json({ message: err.message || "Server error." });
+  }
+}
+
+export async function certificates(req: InternAuthRequest, res: Response): Promise<void> {
+  try { res.json({ certificates: await internships.getInternCertificates(req.intern!.id) }); }
+  catch (err: any) { res.status(err.status || 500).json({ message: err.message || "Server error." }); }
+}
+
+export async function downloadCertificate(req: InternAuthRequest, res: Response): Promise<void> {
+  try {
+    sendCertificatePdf(res, await internships.getCertificateForDownload(req.params.certificateId, req.intern!.id));
+  } catch (err: any) {
+    res.status(err.status || 500).json({ message: err.message || "Server error." });
+  }
+}
+
+export async function verifyCertificate(req: Request, res: Response): Promise<void> {
+  try { res.json(await internships.verifyCertificate(String(req.query.token || req.query.certificateId || ""))); }
+  catch (err) { console.error("[internPortal/verifyCertificate]", err); res.status(500).json({ message: "Server error." }); }
 }
 
 export async function updateProfile(req: InternAuthRequest, res: Response): Promise<void> {
@@ -131,25 +173,87 @@ export function uploadFile(req: Request, res: Response): void {
   });
 }
 
+export function uploadPrivateDocument(req: Request, res: Response): void {
+  if (!req.file) {
+    res.status(400).json({ message: "A PDF document is required." });
+    return;
+  }
+
+  res.status(201).json({ document_key: req.file.filename, filename: req.file.originalname });
+}
+
+export async function downloadPrivateDocument(req: InternAuthRequest, res: Response): Promise<void> {
+  try {
+    const documentKey = await internships.getInternPrivateDocument(req.intern!.id, req.params.type);
+    if (!documentKey || !/^[a-f0-9-]+\.pdf$/i.test(documentKey)) {
+      res.status(404).json({ message: "Document not found." });
+      return;
+    }
+
+    const documentPath = path.join(process.cwd(), "private-intern-documents", documentKey);
+    if (!fs.existsSync(documentPath)) {
+      res.status(404).json({ message: "Document not found." });
+      return;
+    }
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", "inline");
+    res.sendFile(documentPath);
+  } catch (err: any) {
+    console.error("[internPortal/downloadPrivateDocument]", err);
+    res.status(err.status || 500).json({ message: err.message || "Server error." });
+  }
+}
+
+export async function requestLeave(req: InternAuthRequest, res: Response): Promise<void> {
+  try {
+    await internships.requestInternLeave(req.intern!.id, req.body);
+    res.status(201).json({ message: "Leave request submitted." });
+  } catch (err: any) {
+    console.error("[internPortal/requestLeave]", err);
+    res.status(err.status || 500).json({ message: err.message || "Server error." });
+  }
+}
+
+export async function myLeaves(req: InternAuthRequest, res: Response): Promise<void> {
+  try {
+    res.json(await internships.getInternLeaves(req.intern!.id));
+  } catch (err: any) {
+    console.error("[internPortal/myLeaves]", err);
+    res.status(err.status || 500).json({ message: err.message || "Server error." });
+  }
+}
+
+export async function calendar(req: InternAuthRequest, res: Response): Promise<void> {
+  try {
+    const year = Number(req.query.year) || new Date().getFullYear();
+    const month = Number(req.query.month) || new Date().getMonth() + 1;
+    res.json(await internships.getInternCalendar(req.intern!.id, year, month));
+  } catch (err: any) {
+    console.error("[internPortal/calendar]", err);
+    res.status(err.status || 500).json({ message: err.message || "Server error." });
+  }
+}
+
 export async function checkIn(req: InternAuthRequest, res: Response): Promise<void> {
   try {
     const ip = requestIp(req);
-    await internships.internCheckIn(req.intern!.id, ip);
+    await internships.internCheckIn(req.intern!.id, ip, req.body?.reason);
     res.json({ message: "Checked in successfully." });
   } catch (err: any) {
     console.error("[internPortal/checkIn]", err);
-    res.status(err.status || 500).json({ message: err.message || "Server error." });
+    res.status(err.status || 500).json({ message: err.message || "Server error.", code: err.code });
   }
 }
 
 export async function checkOut(req: InternAuthRequest, res: Response): Promise<void> {
   try {
     const ip = requestIp(req);
-    await internships.internCheckOut(req.intern!.id, ip);
+    await internships.internCheckOut(req.intern!.id, ip, req.body?.confirmHalfDay);
     res.json({ message: "Checked out successfully." });
   } catch (err: any) {
     console.error("[internPortal/checkOut]", err);
-    res.status(err.status || 500).json({ message: err.message || "Server error." });
+    res.status(err.status || 500).json({ message: err.message || "Server error.", code: err.code });
   }
 }
 

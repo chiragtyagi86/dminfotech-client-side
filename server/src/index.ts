@@ -37,10 +37,26 @@ app.use(
   })
 );
 
+const allowedOrigins = new Set([
+  process.env.CLIENT_URL || "http://localhost:5173",
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "http://localhost:5174",
+  "http://127.0.0.1:5174",
+  "http://localhost:5175",
+  "http://127.0.0.1:5175",
+]);
+
 // CORS
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "https://dmifotech.com",
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.has(origin)) {
+        callback(null, true);
+        return;
+      }
+      callback(new Error("Origin is not allowed by CORS."));
+    },
     credentials: true,
   })
 );
@@ -111,14 +127,19 @@ app.use(
   })
 );
 
-// API rate limiter - only /api
-const apiLimiter = rateLimit({
+// Auth rate limiter - only login/auth routes, to slow down brute-force attempts
+const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 200,
-  message: { message: "Too many API requests. Please try again later." },
+  max: 20,
+  message: { message: "Too many login attempts. Please try again later." },
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 
-app.use("/api", apiLimiter, router);
+app.use("/api/admin/auth", authLimiter);
+app.use("/api/intern/auth", authLimiter);
+
+app.use("/api", router);
 
 // Frontend SEO fallback - last
 app.get("*", async (req, res, next) => {

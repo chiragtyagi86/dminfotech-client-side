@@ -31,6 +31,10 @@ function statusClass(status = "") {
   return status.toLowerCase().replace(/\s+/g, "-");
 }
 
+function adminInternDocumentUrl(internId, type) {
+  return `${import.meta.env.VITE_API_URL || ""}/api/admin/internships/interns/${internId}/documents/${type}`;
+}
+
 export default function InternshipsPage() {
   const [data, setData] = useState({
     stats: {},
@@ -40,6 +44,7 @@ export default function InternshipsPage() {
     reports: [],
     attendance: [],
     tasks: [],
+    certificates: [],
   });
   const [activeTab, setActiveTab] = useState("interns");
   const [loading, setLoading] = useState(true);
@@ -77,6 +82,14 @@ export default function InternshipsPage() {
     progress: 0,
     status: "Pending",
   });
+  const [certificateSettings, setCertificateSettings] = useState({ signature_image: "", signer_name: "", signer_designation: "" });
+  const [leaves, setLeaves] = useState([]);
+  const [holidays, setHolidays] = useState([]);
+  const [holidayForm, setHolidayForm] = useState({ holiday_date: "", name: "" });
+  const [officeNetwork, setOfficeNetworkState] = useState({});
+  const [settingOfficeNetwork, setSettingOfficeNetwork] = useState(false);
+  const [showInternModal, setShowInternModal] = useState(false);
+  const [showAttendanceModal, setShowAttendanceModal] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -86,7 +99,10 @@ export default function InternshipsPage() {
     try {
       setLoading(true);
       setError("");
-      const res = await adminApi.getInternships();
+      const [res, certificateResult, settingsResult, leavesResult, holidaysResult, officeNetworkResult] = await Promise.all([
+        adminApi.getInternships(), adminApi.getInternCertificates(), adminApi.getInternCertificateSettings(),
+        adminApi.getLeaves(), adminApi.getHolidays(), adminApi.getOfficeNetwork(),
+      ]);
       setData({
         stats: res.stats || {},
         interns: res.interns || [],
@@ -95,12 +111,79 @@ export default function InternshipsPage() {
         reports: res.reports || [],
         attendance: res.attendance || [],
         tasks: res.tasks || [],
+        certificates: certificateResult.certificates || [],
       });
+      setCertificateSettings(settingsResult || {});
+      setLeaves(leavesResult || []);
+      setHolidays(holidaysResult || []);
+      setOfficeNetworkState(officeNetworkResult || {});
     } catch (err) {
       console.error(err);
       setError(err?.message || "Failed to load internship module.");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function saveOfficeNetwork() {
+    try {
+      setSettingOfficeNetwork(true);
+      await adminApi.setOfficeNetwork();
+      await loadData();
+    } catch (err) {
+      console.error(err);
+      alert(err?.message || "Unable to set office network.");
+    } finally {
+      setSettingOfficeNetwork(false);
+    }
+  }
+
+  async function clearOfficeNetwork() {
+    if (!window.confirm("Unset office network? Interns will be able to mark attendance from any network.")) return;
+    try {
+      setSettingOfficeNetwork(true);
+      await adminApi.unsetOfficeNetwork();
+      await loadData();
+    } catch (err) {
+      console.error(err);
+      alert(err?.message || "Unable to unset office network.");
+    } finally {
+      setSettingOfficeNetwork(false);
+    }
+  }
+
+  async function reviewLeave(id, status) {
+    try {
+      await adminApi.reviewLeave(id, status);
+      await loadData();
+    } catch (err) {
+      console.error(err);
+      alert(err?.message || "Unable to update leave request.");
+    }
+  }
+
+  async function saveHoliday(event) {
+    event.preventDefault();
+    try {
+      setSaving(true);
+      await adminApi.addHoliday(holidayForm);
+      setHolidayForm({ holiday_date: "", name: "" });
+      await loadData();
+    } catch (err) {
+      console.error(err);
+      alert(err?.message || "Unable to save holiday.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function removeHoliday(id) {
+    try {
+      await adminApi.deleteHoliday(id);
+      await loadData();
+    } catch (err) {
+      console.error(err);
+      alert(err?.message || "Unable to delete holiday.");
     }
   }
 
@@ -127,6 +210,18 @@ export default function InternshipsPage() {
     setInternForm((prev) => ({ ...prev, [key]: value }));
   }
 
+  function openAddIntern() {
+    setEditingId(null);
+    setInternForm(emptyIntern);
+    setShowInternModal(true);
+  }
+
+  function closeInternModal() {
+    setShowInternModal(false);
+    setEditingId(null);
+    setInternForm(emptyIntern);
+  }
+
   function startEdit(intern) {
     setEditingId(intern.id);
     setInternForm({
@@ -147,7 +242,7 @@ export default function InternshipsPage() {
       password: "",
       login_enabled: Boolean(intern.login_enabled ?? true),
     });
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setShowInternModal(true);
   }
 
   async function saveIntern(event) {
@@ -156,8 +251,7 @@ export default function InternshipsPage() {
       setSaving(true);
       if (editingId) await adminApi.updateIntern(editingId, internForm);
       else await adminApi.createIntern(internForm);
-      setInternForm(emptyIntern);
-      setEditingId(null);
+      closeInternModal();
       await loadData();
     } catch (err) {
       console.error(err);
@@ -184,12 +278,23 @@ export default function InternshipsPage() {
       setSaving(true);
       await adminApi.saveInternAttendance(attendanceForm);
       setAttendanceForm((prev) => ({ ...prev, check_out: "", remarks: "" }));
+      setShowAttendanceModal(false);
       await loadData();
     } catch (err) {
       console.error(err);
       alert(err?.message || "Unable to save attendance.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function verifyAttendance(id, status) {
+    try {
+      await adminApi.verifyAttendance(id, status);
+      await loadData();
+    } catch (err) {
+      console.error(err);
+      alert(err?.message || "Unable to update verification.");
     }
   }
 
@@ -261,10 +366,35 @@ export default function InternshipsPage() {
     }
   }
 
+  async function saveCertificateSettings(event) {
+    event.preventDefault();
+    try { setSaving(true); await adminApi.updateInternCertificateSettings(certificateSettings); await loadData(); }
+    catch (err) { alert(err?.message || "Unable to save certificate settings."); }
+    finally { setSaving(false); }
+  }
+
+  async function uploadCertificateSignature(file) {
+    if (!file) return;
+    try { const fd = new FormData(); fd.append("file", file); fd.append("mediaKey", "intern_certificate_signature"); const result = await adminApi.uploadMedia(fd); setCertificateSettings((prev) => ({ ...prev, signature_image: result.filePath })); }
+    catch (err) { alert(err?.message || "Unable to upload signature."); }
+  }
+
+  async function issueCertificate(internId) {
+    try { await adminApi.issueInternCertificate(internId); await loadData(); }
+    catch (err) { alert(err?.message || "Unable to issue certificate."); }
+  }
+
+  async function revokeCertificate(id) {
+    const reason = window.prompt("Reason for revocation", "");
+    if (reason === null) return;
+    try { await adminApi.revokeInternCertificate(id, reason); await loadData(); }
+    catch (err) { alert(err?.message || "Unable to revoke certificate."); }
+  }
+
   return (
     <div className="ims-root">
       <style>{`
-        .ims-root{display:flex;flex-direction:column;gap:22px;color:#3a405a;}
+        .ims-root{display:flex;flex-direction:column;gap:26px;color:#3a405a;}
         .ims-top{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap;}
         .ims-title{font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:400;margin:0;color:#3a405a;}
         .ims-sub{font-size:13px;color:rgba(104,80,68,0.58);margin:4px 0 0;}
@@ -278,7 +408,7 @@ export default function InternshipsPage() {
         .ims-panel{background:#fff;border:1px solid rgba(104,80,68,0.09);border-radius:8px;overflow:hidden;}
         .ims-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid rgba(104,80,68,0.07);background:#fdfaf8;}
         .ims-panel-title{font-size:14px;font-weight:500;margin:0;}
-        .ims-form{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:12px;padding:18px;}
+        .ims-form{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:16px;padding:20px;}
         .ims-field{display:flex;flex-direction:column;gap:6px;}
         .ims-field.wide{grid-column:span 2;}
         .ims-field.full{grid-column:1/-1;}
@@ -296,6 +426,13 @@ export default function InternshipsPage() {
         .ims-table tr:last-child td{border-bottom:0;}
         .ims-name{font-weight:500;color:#3a405a;}
         .ims-muted{color:rgba(104,80,68,.55);}
+        .ims-office-net{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:18px;}
+        .ims-office-ip{font-family:'Cormorant Garamond',serif;font-size:22px;color:#3a405a;margin-top:2px;}
+        .ims-office-net + p.ims-muted{padding:0 18px 18px;margin:0;font-size:12.5px;}
+        .ims-overlay{position:fixed;inset:0;background:rgba(35,30,25,.5);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:24px;z-index:60;}
+        .ims-modal-box{background:#fff;border-radius:14px;max-width:920px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 30px 70px -20px rgba(0,0,0,.4);}
+        .ims-modal-actions{display:flex;justify-content:flex-end;gap:10px;align-self:end;}
+        .ims-modal-actions.full{grid-column:1/-1;}
         .ims-badge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 9px;font-size:10.5px;font-weight:500;background:rgba(104,80,68,.08);color:#685044;white-space:nowrap;}
         .ims-badge.active,.ims-badge.approved,.ims-badge.present,.ims-badge.completed{background:rgba(39,174,96,.11);color:#238b4b;}
         .ims-badge.pending,.ims-badge.applied{background:rgba(218,165,32,.13);color:#9a6c07;}
@@ -319,7 +456,7 @@ export default function InternshipsPage() {
           <p className="ims-sub">MVP module for registration, attendance, daily work reports, tasks, and mentor review.</p>
         </div>
         <div className="ims-actions">
-          {["interns", "attendance", "reports", "tasks"].map((tab) => (
+          {["interns", "attendance", "leaves", "reports", "tasks", "certificates"].map((tab) => (
             <button key={tab} className={`ims-tab ${activeTab === tab ? "active" : ""}`} onClick={() => setActiveTab(tab)}>
               {tab[0].toUpperCase() + tab.slice(1)}
             </button>
@@ -339,11 +476,27 @@ export default function InternshipsPage() {
       </div>
 
       {activeTab === "interns" && (
-        <>
-          <section className="ims-panel">
+        <section className="ims-panel">
+          <div className="ims-panel-head">
+            <h2 className="ims-panel-title">Interns</h2>
+            <button className="ims-submit" onClick={openAddIntern}>+ Add Intern</button>
+          </div>
+          <div className="ims-filters">
+            <select value={filters.batch} onChange={(e) => setFilters((p) => ({ ...p, batch: e.target.value }))}><option value="">All Batches</option>{data.batches.map((b) => <option key={b.id} value={b.id}>{b.batch_name}</option>)}</select>
+            <select value={filters.college} onChange={(e) => setFilters((p) => ({ ...p, college: e.target.value }))}><option value="">All Colleges</option>{colleges.map((c) => <option key={c}>{c}</option>)}</select>
+            <select value={filters.role} onChange={(e) => setFilters((p) => ({ ...p, role: e.target.value }))}><option value="">All Roles</option>{roles.map((r) => <option key={r}>{r}</option>)}</select>
+            <select value={filters.status} onChange={(e) => setFilters((p) => ({ ...p, status: e.target.value }))}><option value="">All Statuses</option>{["Applied","Selected","Active","On Hold","Completed","Terminated"].map((s) => <option key={s}>{s}</option>)}</select>
+          </div>
+          <InternsTable loading={loading} interns={filteredInterns} onEdit={startEdit} onDelete={deleteIntern} />
+        </section>
+      )}
+
+      {showInternModal && (
+        <div className="ims-overlay" role="dialog" aria-modal="true" onClick={(e) => e.target === e.currentTarget && closeInternModal()}>
+          <div className="ims-modal-box">
             <div className="ims-panel-head">
               <h2 className="ims-panel-title">{editingId ? "Edit Intern" : "Add Intern"}</h2>
-              {editingId && <button className="ims-secondary" onClick={() => { setEditingId(null); setInternForm(emptyIntern); }}>Cancel edit</button>}
+              <button className="ims-secondary" onClick={closeInternModal}>Close</button>
             </div>
             <form className="ims-form" onSubmit={saveIntern}>
               <Field label="Intern ID"><input value={internForm.intern_id} onChange={(e) => updateInternForm("intern_id", e.target.value)} placeholder="Auto if blank" /></Field>
@@ -362,38 +515,86 @@ export default function InternshipsPage() {
               <Field label={editingId ? "New Password" : "Password"}><input type="password" value={internForm.password} onChange={(e) => updateInternForm("password", e.target.value)} placeholder={editingId ? "Leave blank to keep" : "Temporary password"} /></Field>
               <Field label="Login Access"><select value={internForm.login_enabled ? "1" : "0"} onChange={(e) => updateInternForm("login_enabled", e.target.value === "1")}><option value="1">Enabled</option><option value="0">Disabled</option></select></Field>
               <Field label="Resume URL" className="wide"><input value={internForm.resume} onChange={(e) => updateInternForm("resume", e.target.value)} placeholder="/uploads/resumes/file.pdf" /></Field>
-              <button className="ims-submit" disabled={saving}>{saving ? "Saving..." : editingId ? "Update Intern" : "Add Intern"}</button>
+              <div className="ims-modal-actions full">
+                <button type="button" className="ims-secondary" onClick={closeInternModal}>Cancel</button>
+                <button className="ims-submit" disabled={saving}>{saving ? "Saving..." : editingId ? "Update Intern" : "Add Intern"}</button>
+              </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {activeTab === "attendance" && (
+        <>
+          <section className="ims-panel">
+            <div className="ims-panel-head"><h2 className="ims-panel-title">Office Network</h2></div>
+            <div className="ims-office-net">
+              <div>
+                <div className="ims-muted">Approved office IP</div>
+                <div className="ims-office-ip">{officeNetwork.office_ip || "Not set — attendance allowed from any network"}</div>
+                {officeNetwork.set_by && <div className="ims-muted">Set by {officeNetwork.set_by} on {dateOnly(officeNetwork.set_at)}</div>}
+              </div>
+              <div className="ims-row-actions">
+                {officeNetwork.office_ip && <button className="ims-secondary" disabled={settingOfficeNetwork} onClick={clearOfficeNetwork}>Unset</button>}
+                <button className="ims-submit" disabled={settingOfficeNetwork} onClick={saveOfficeNetwork}>
+                  {settingOfficeNetwork ? "Detecting..." : "Set Office Network"}
+                </button>
+              </div>
+            </div>
+            <p className="ims-muted">Connect to office Wi-Fi first, then click this from an admin session on that network. Interns can only mark attendance from this IP.</p>
           </section>
 
           <section className="ims-panel">
-            <div className="ims-panel-head"><h2 className="ims-panel-title">Interns</h2></div>
-            <div className="ims-filters">
-              <select value={filters.batch} onChange={(e) => setFilters((p) => ({ ...p, batch: e.target.value }))}><option value="">All Batches</option>{data.batches.map((b) => <option key={b.id} value={b.id}>{b.batch_name}</option>)}</select>
-              <select value={filters.college} onChange={(e) => setFilters((p) => ({ ...p, college: e.target.value }))}><option value="">All Colleges</option>{colleges.map((c) => <option key={c}>{c}</option>)}</select>
-              <select value={filters.role} onChange={(e) => setFilters((p) => ({ ...p, role: e.target.value }))}><option value="">All Roles</option>{roles.map((r) => <option key={r}>{r}</option>)}</select>
-              <select value={filters.status} onChange={(e) => setFilters((p) => ({ ...p, status: e.target.value }))}><option value="">All Statuses</option>{["Applied","Selected","Active","On Hold","Completed","Terminated"].map((s) => <option key={s}>{s}</option>)}</select>
+            <div className="ims-panel-head">
+              <h2 className="ims-panel-title">Daily Attendance</h2>
+              <button className="ims-submit" onClick={() => setShowAttendanceModal(true)}>+ Mark Attendance</button>
             </div>
-            <InternsTable loading={loading} interns={filteredInterns} onEdit={startEdit} onDelete={deleteIntern} />
+            <AttendanceTable rows={data.attendance} loading={loading} onVerify={verifyAttendance} />
           </section>
         </>
       )}
 
-      {activeTab === "attendance" && (
-        <section className="ims-panel">
-          <div className="ims-panel-head"><h2 className="ims-panel-title">Daily Attendance</h2></div>
-          <form className="ims-form" onSubmit={saveAttendance}>
-            <Field label="Intern"><Select required value={attendanceForm.intern_id} onChange={(e) => setAttendanceForm((p) => ({ ...p, intern_id: e.target.value }))} items={data.interns} labelKey="full_name" /></Field>
-            <Field label="Date"><input type="date" required value={attendanceForm.attendance_date} onChange={(e) => setAttendanceForm((p) => ({ ...p, attendance_date: e.target.value }))} /></Field>
-            <Field label="Check In"><input type="time" value={attendanceForm.check_in} onChange={(e) => setAttendanceForm((p) => ({ ...p, check_in: e.target.value }))} /></Field>
-            <Field label="Check Out"><input type="time" value={attendanceForm.check_out} onChange={(e) => setAttendanceForm((p) => ({ ...p, check_out: e.target.value }))} /></Field>
-            <Field label="Work Mode"><select value={attendanceForm.work_mode} onChange={(e) => setAttendanceForm((p) => ({ ...p, work_mode: e.target.value }))}>{["Office","Remote","Hybrid"].map((s) => <option key={s}>{s}</option>)}</select></Field>
-            <Field label="Status"><select value={attendanceForm.status} onChange={(e) => setAttendanceForm((p) => ({ ...p, status: e.target.value }))}>{["Present","Absent","Late","Half Day"].map((s) => <option key={s}>{s}</option>)}</select></Field>
-            <Field label="Remarks" className="wide"><input value={attendanceForm.remarks} onChange={(e) => setAttendanceForm((p) => ({ ...p, remarks: e.target.value }))} /></Field>
-            <button className="ims-submit" disabled={saving}>Save Attendance</button>
-          </form>
-          <AttendanceTable rows={data.attendance} loading={loading} />
-        </section>
+      {showAttendanceModal && (
+        <div className="ims-overlay" role="dialog" aria-modal="true" onClick={(e) => e.target === e.currentTarget && setShowAttendanceModal(false)}>
+          <div className="ims-modal-box">
+            <div className="ims-panel-head">
+              <h2 className="ims-panel-title">Mark Attendance</h2>
+              <button className="ims-secondary" onClick={() => setShowAttendanceModal(false)}>Close</button>
+            </div>
+            <form className="ims-form" onSubmit={saveAttendance}>
+              <Field label="Intern"><Select required value={attendanceForm.intern_id} onChange={(e) => setAttendanceForm((p) => ({ ...p, intern_id: e.target.value }))} items={data.interns} labelKey="full_name" /></Field>
+              <Field label="Date"><input type="date" required value={attendanceForm.attendance_date} onChange={(e) => setAttendanceForm((p) => ({ ...p, attendance_date: e.target.value }))} /></Field>
+              <Field label="Check In"><input type="time" value={attendanceForm.check_in} onChange={(e) => setAttendanceForm((p) => ({ ...p, check_in: e.target.value }))} /></Field>
+              <Field label="Check Out"><input type="time" value={attendanceForm.check_out} onChange={(e) => setAttendanceForm((p) => ({ ...p, check_out: e.target.value }))} /></Field>
+              <Field label="Work Mode"><select value={attendanceForm.work_mode} onChange={(e) => setAttendanceForm((p) => ({ ...p, work_mode: e.target.value }))}>{["Office","Remote","Hybrid"].map((s) => <option key={s}>{s}</option>)}</select></Field>
+              <Field label="Status"><select value={attendanceForm.status} onChange={(e) => setAttendanceForm((p) => ({ ...p, status: e.target.value }))}>{["Present","Absent","Late","Half Day"].map((s) => <option key={s}>{s}</option>)}</select></Field>
+              <Field label="Remarks" className="wide"><input value={attendanceForm.remarks} onChange={(e) => setAttendanceForm((p) => ({ ...p, remarks: e.target.value }))} /></Field>
+              <div className="ims-modal-actions full">
+                <button type="button" className="ims-secondary" onClick={() => setShowAttendanceModal(false)}>Cancel</button>
+                <button className="ims-submit" disabled={saving}>{saving ? "Saving..." : "Save Attendance"}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {activeTab === "leaves" && (
+        <>
+          <section className="ims-panel">
+            <div className="ims-panel-head"><h2 className="ims-panel-title">Leave Requests</h2></div>
+            <LeavesTable rows={leaves} loading={loading} onReview={reviewLeave} />
+          </section>
+
+          <section className="ims-panel">
+            <div className="ims-panel-head"><h2 className="ims-panel-title">Company Holidays</h2></div>
+            <form className="ims-form" onSubmit={saveHoliday}>
+              <Field label="Date"><input type="date" required value={holidayForm.holiday_date} onChange={(e) => setHolidayForm((p) => ({ ...p, holiday_date: e.target.value }))} /></Field>
+              <Field label="Name" className="wide"><input required value={holidayForm.name} onChange={(e) => setHolidayForm((p) => ({ ...p, name: e.target.value }))} /></Field>
+              <button className="ims-submit" disabled={saving}>Add Holiday</button>
+            </form>
+            <HolidaysTable rows={holidays} loading={loading} onDelete={removeHoliday} />
+          </section>
+        </>
       )}
 
       {activeTab === "reports" && (
@@ -431,6 +632,24 @@ export default function InternshipsPage() {
           <TasksTable rows={data.tasks} loading={loading} onProgress={updateTask} />
         </section>
       )}
+
+      {activeTab === "certificates" && (
+        <>
+          <section className="ims-panel">
+            <div className="ims-panel-head"><h2 className="ims-panel-title">Certificate Signature</h2></div>
+            <form className="ims-form" onSubmit={saveCertificateSettings}>
+              <Field label="Signer Name"><input required value={certificateSettings.signer_name || ""} onChange={(e) => setCertificateSettings((p) => ({ ...p, signer_name: e.target.value }))} /></Field>
+              <Field label="Signer Designation"><input value={certificateSettings.signer_designation || ""} onChange={(e) => setCertificateSettings((p) => ({ ...p, signer_designation: e.target.value }))} /></Field>
+              <Field label="Signature Image"><input type="file" accept="image/*" onChange={(e) => uploadCertificateSignature(e.target.files?.[0])} />{certificateSettings.signature_image && <a className="ims-muted" href={`${import.meta.env.VITE_API_URL || ""}${certificateSettings.signature_image}`} target="_blank" rel="noreferrer">View signature</a>}</Field>
+              <button className="ims-submit" disabled={saving}>Save Settings</button>
+            </form>
+          </section>
+          <section className="ims-panel">
+            <div className="ims-panel-head"><h2 className="ims-panel-title">Issue Certificates</h2></div>
+            <div className="ims-table-wrap"><table className="ims-table"><thead><tr><th>Intern</th><th>Role</th><th>Status</th><th>Certificate</th><th>Action</th></tr></thead><tbody>{data.interns.map((intern) => { const certificate = data.certificates.find((item) => item.intern_id === intern.id && item.status === "Issued"); return <tr key={intern.id}><td>{intern.full_name}</td><td>{intern.role || "-"}</td><td><span className={`ims-badge ${statusClass(intern.status)}`}>{intern.status}</span></td><td>{certificate ? <a className="ims-small" href={`${import.meta.env.VITE_API_URL || ""}/api/admin/internships/certificates/${certificate.id}/download`}>Download</a> : "-"}</td><td>{certificate ? <button className="ims-small danger" onClick={() => revokeCertificate(certificate.id)}>Revoke</button> : <button className="ims-small good" disabled={intern.status !== "Completed"} onClick={() => issueCertificate(intern.id)}>Issue</button>}</td></tr>; })}</tbody></table></div>
+          </section>
+        </>
+      )}
     </div>
   );
 }
@@ -458,16 +677,17 @@ function InternsTable({ loading, interns, onEdit, onDelete }) {
   return (
     <div className="ims-table-wrap">
       <table className="ims-table">
-        <thead><tr><th>Intern</th><th>College</th><th>Role</th><th>Batch</th><th>Mentor</th><th>Duration</th><th>Status</th><th>Actions</th></tr></thead>
+        <thead><tr><th>Intern</th><th>College</th><th>Role</th><th>Batch</th><th>Mentor</th><th>Duration</th><th>Documents</th><th>Status</th><th>Actions</th></tr></thead>
         <tbody>
           {interns.map((intern) => (
             <tr key={intern.id}>
               <td><div className="ims-name">{intern.full_name}</div><div className="ims-muted">{intern.intern_id} · {intern.email}</div></td>
-              <td>{intern.college || <span className="ims-muted">-</span>}</td>
+              <td><div>{intern.college || <span className="ims-muted">-</span>}</div>{intern.college_university && <div className="ims-muted">{intern.college_university}</div>}{(intern.college_start_year || intern.college_passing_year || intern.college_percentage) && <div className="ims-muted">{intern.college_start_year || "-"} to {intern.college_passing_year || "-"}{intern.college_percentage ? ` · ${intern.college_percentage}%` : ""}</div>}</td>
               <td>{intern.role || <span className="ims-muted">-</span>}</td>
               <td>{intern.batch_name || <span className="ims-muted">-</span>}</td>
               <td>{intern.mentor_name || <span className="ims-muted">-</span>}</td>
               <td className="ims-muted">{dateOnly(intern.start_date) || "-"} to {dateOnly(intern.end_date) || "-"}</td>
+              <td>{intern.aadhaar_card_document || intern.cancelled_cheque_document || intern.bank_account_last4 || intern.tenth_passing_year || intern.twelfth_passing_year ? <><div className="ims-row-actions">{intern.aadhaar_card_document && <a className="ims-small" href={adminInternDocumentUrl(intern.id, "aadhaar")} target="_blank" rel="noreferrer">Aadhaar</a>}{intern.cancelled_cheque_document && <a className="ims-small" href={adminInternDocumentUrl(intern.id, "cancelled_cheque")} target="_blank" rel="noreferrer">Cheque</a>}</div>{intern.bank_account_last4 && <div className="ims-muted">{intern.bank_name || "Bank"} · XXXX{intern.bank_account_last4}</div>}{(intern.tenth_passing_year || intern.twelfth_passing_year) && <div className="ims-muted">10th: {intern.tenth_passing_year || "-"} · 12th: {intern.twelfth_passing_year || "-"}</div>}</> : <span className="ims-muted">-</span>}</td>
               <td><span className={`ims-badge ${statusClass(intern.status)}`}>{intern.status}</span></td>
               <td><div className="ims-row-actions"><button className="ims-small" onClick={() => onEdit(intern)}>Edit</button><button className="ims-small danger" onClick={() => onDelete(intern.id)}>Delete</button></div></td>
             </tr>
@@ -478,14 +698,90 @@ function InternsTable({ loading, interns, onEdit, onDelete }) {
   );
 }
 
-function AttendanceTable({ rows, loading }) {
+function AttendanceTable({ rows, loading, onVerify }) {
   if (loading) return <div className="ims-empty">Loading attendance...</div>;
   if (!rows.length) return <div className="ims-empty">No attendance records yet.</div>;
   return (
     <div className="ims-table-wrap">
       <table className="ims-table">
-        <thead><tr><th>Date</th><th>Intern</th><th>Check In</th><th>Check Out</th><th>Work Mode</th><th>Status</th><th>Remarks</th></tr></thead>
-        <tbody>{rows.map((row) => <tr key={row.id}><td>{dateOnly(row.attendance_date)}</td><td><div className="ims-name">{row.full_name}</div><div className="ims-muted">{row.intern_code}</div></td><td>{row.check_in || "-"}</td><td>{row.check_out || "-"}</td><td>{row.work_mode}</td><td><span className={`ims-badge ${statusClass(row.status)}`}>{row.status}</span></td><td className="ims-muted">{row.remarks || "-"}</td></tr>)}</tbody>
+        <thead><tr><th>Date</th><th>Intern</th><th>Check In</th><th>Check Out</th><th>Work Mode</th><th>Status</th><th>Late Reason</th><th>Verification</th></tr></thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.id}>
+              <td>{dateOnly(row.attendance_date)}</td>
+              <td><div className="ims-name">{row.full_name}</div><div className="ims-muted">{row.intern_code}</div></td>
+              <td>{row.check_in || "-"}</td>
+              <td>{row.check_out || "-"}</td>
+              <td>{row.work_mode}</td>
+              <td><span className={`ims-badge ${statusClass(row.status)}`}>{row.status}</span></td>
+              <td className="ims-muted" style={{ maxWidth: 240 }}>{row.late_reason || "-"}</td>
+              <td>
+                {row.verification_status === "Pending" ? (
+                  <div className="ims-row-actions">
+                    <button className="ims-small good" onClick={() => onVerify(row.id, "Approved")}>Approve</button>
+                    <button className="ims-small danger" onClick={() => onVerify(row.id, "Rejected")}>Reject</button>
+                  </div>
+                ) : (
+                  <span className={`ims-badge ${statusClass(row.verification_status)}`}>{row.verification_status}</span>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function LeavesTable({ rows, loading, onReview }) {
+  if (loading) return <div className="ims-empty">Loading leave requests...</div>;
+  if (!rows.length) return <div className="ims-empty">No leave requests yet.</div>;
+  return (
+    <div className="ims-table-wrap">
+      <table className="ims-table">
+        <thead><tr><th>Intern</th><th>From</th><th>To</th><th>Reason</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.id}>
+              <td><div className="ims-name">{row.full_name}</div><div className="ims-muted">{row.intern_code}</div></td>
+              <td>{dateOnly(row.start_date)}</td>
+              <td>{dateOnly(row.end_date)}</td>
+              <td className="ims-muted" style={{ maxWidth: 260 }}>{row.reason || "-"}</td>
+              <td><span className={`ims-badge ${statusClass(row.status)}`}>{row.status}</span></td>
+              <td>
+                {row.status === "Pending" ? (
+                  <div className="ims-row-actions">
+                    <button className="ims-small good" onClick={() => onReview(row.id, "Approved")}>Approve</button>
+                    <button className="ims-small danger" onClick={() => onReview(row.id, "Rejected")}>Reject</button>
+                  </div>
+                ) : (
+                  <span className="ims-muted">{row.reviewed_by || "-"}</span>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function HolidaysTable({ rows, loading, onDelete }) {
+  if (loading) return <div className="ims-empty">Loading holidays...</div>;
+  if (!rows.length) return <div className="ims-empty">No holidays added yet.</div>;
+  return (
+    <div className="ims-table-wrap">
+      <table className="ims-table">
+        <thead><tr><th>Date</th><th>Name</th><th></th></tr></thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.id}>
+              <td>{dateOnly(row.holiday_date)}</td>
+              <td>{row.name}</td>
+              <td><button className="ims-small danger" onClick={() => onDelete(row.id)}>Remove</button></td>
+            </tr>
+          ))}
+        </tbody>
       </table>
     </div>
   );

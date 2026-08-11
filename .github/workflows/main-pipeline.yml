@@ -153,7 +153,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftp
           port: 21
-          local-dir: ./server/dist/
+          local-dir: ./server/deploy/
           server-dir: ./staging-api.dmifotech.com/
           timeout: 300000
           dangerous-clean-slate: false
@@ -166,6 +166,9 @@ jobs:
             **/uploads/**
             uploads/**
             uploads/**/*
+            **/private-intern-documents/**
+            private-intern-documents/**
+            private-intern-documents/**/*
 
   deploy-production:
     name: 06 Deploy Production
@@ -236,3 +239,7 @@ jobs:
             **/.env
             **/uploads/**
             uploads/**
+            uploads/**/*
+            **/private-intern-documents/**
+            private-intern-documents/**
+            private-intern-documents/**/*
