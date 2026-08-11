@@ -1,5 +1,5 @@
 // src/App.jsx
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { useEffect } from "react";
 import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
@@ -54,7 +54,8 @@ import AboutPageEditor       from "./admin/pages/pages/AboutPageEditor";
 import ContactPageEditor     from "./admin/pages/pages/ContactPageEditor";
 import PageEditor            from "./admin/pages/pages/PageEditor";
 import InternLoginPage       from "./pages/intern/InternLoginPage";
-import InternDashboardPage   from "./pages/intern/InternDashboardPage";
+import { InternDashboardPage, InternProfilePage, InternReportsPage, InternTasksPage, InternAttendancePage, InternCertificatesPage } from "./pages/intern/InternPortalPages";
+import VerifyCertificatePage from "./pages/VerifyCertificatePage";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -124,6 +125,8 @@ function AppShell() {
         <Route path="/blog/:slug"          element={<BlogArticlePage />} />
         <Route path="/blog/category/:slug" element={<BlogCategoryPage />} />
         <Route path="/contact"             element={<ContactPageWrapper />} />
+        <Route path="/verify-certificate"  element={<VerifyCertificatePage />} />
+        <Route path="/verify"              element={<VerifyCertificatePage />} />
         <Route path="/careers"             element={<CareersPage />} />
         <Route path="/careers/:slug"       element={<CareerDetailPage />} />
         <Route path="/testimonials"        element={<TestimonialsPage />} />
@@ -133,8 +136,14 @@ function AppShell() {
 
         {/* ── Admin: login (no layout, no protection) ── */}
         <Route path="/admin/login" element={<AdminLoginPage />} />
+        <Route path="/intern" element={<Navigate to="/intern/login" replace />} />
         <Route path="/intern/login" element={<InternLoginPage />} />
         <Route path="/intern/dashboard" element={<I><InternDashboardPage /></I>} />
+        <Route path="/intern/profile" element={<I><InternProfilePage /></I>} />
+        <Route path="/intern/reports" element={<I><InternReportsPage /></I>} />
+        <Route path="/intern/tasks" element={<I><InternTasksPage /></I>} />
+        <Route path="/intern/attendance" element={<I><InternAttendancePage /></I>} />
+        <Route path="/intern/certificates" element={<I><InternCertificatesPage /></I>} />
 
         {/* ── Admin: protected + wrapped in AdminLayout ── */}
         <Route path="/admin"                           element={<A><DashboardPage /></A>} />

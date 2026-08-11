@@ -15,7 +15,10 @@ async function apiFetch(path, options = {}) {
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || `API error ${res.status}`);
+    const error = new Error(err.message || `API error ${res.status}`);
+    error.code = err.code;
+    error.status = res.status;
+    throw error;
   }
 
   return res.json();
@@ -89,23 +92,32 @@ export const internApi = {
     }),
   me: () => apiFetch("/intern/auth/me"),
   getDashboard: () => apiFetch("/intern/dashboard"),
+  getHistory: (type) => apiFetch(`/intern/history/${type}`),
   updateProfile: (data) =>
     apiFetch("/intern/profile", { method: "PUT", body: JSON.stringify(data) }),
   uploadProfilePhoto: (formData) =>
     apiFetch("/intern/profile/photo", { method: "POST", body: formData }),
   uploadFile: (formData) =>
     apiFetch("/intern/files", { method: "POST", body: formData }),
+  uploadPrivateDocument: (formData) =>
+    apiFetch("/intern/profile/private-document", { method: "POST", body: formData }),
   changePassword: (currentPassword, newPassword) =>
     apiFetch("/intern/password", {
       method: "POST",
       body: JSON.stringify({ currentPassword, newPassword }),
     }),
-  checkIn: () => apiFetch("/intern/attendance/check-in", { method: "POST" }),
-  checkOut: () => apiFetch("/intern/attendance/check-out", { method: "POST" }),
+  checkIn: (reason) =>
+    apiFetch("/intern/attendance/check-in", { method: "POST", body: JSON.stringify({ reason }) }),
+  checkOut: (confirmHalfDay) =>
+    apiFetch("/intern/attendance/check-out", { method: "POST", body: JSON.stringify({ confirmHalfDay }) }),
   submitReport: (data) =>
     apiFetch("/intern/reports", { method: "POST", body: JSON.stringify(data) }),
   updateTask: (id, data) =>
     apiFetch(`/intern/tasks/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+  getCertificates: () => apiFetch("/intern/certificates"),
+  getCalendar: (year, month) => apiFetch(`/intern/attendance/calendar?year=${year}&month=${month}`),
+  requestLeave: (data) => apiFetch("/intern/leaves", { method: "POST", body: JSON.stringify(data) }),
+  getMyLeaves: () => apiFetch("/intern/leaves"),
 };
 
 export const adminApi = {
@@ -268,6 +280,17 @@ deleteTeamMember: (id) =>
     apiFetch(`/admin/internships/interns/${id}`, { method: "DELETE" }),
   saveInternAttendance: (data) =>
     apiFetch("/admin/internships/attendance", { method: "POST", body: JSON.stringify(data) }),
+  verifyAttendance: (id, status) =>
+    apiFetch(`/admin/internships/attendance/${id}/verify`, { method: "PATCH", body: JSON.stringify({ status }) }),
+  getLeaves: () => apiFetch("/admin/internships/leaves"),
+  reviewLeave: (id, status) =>
+    apiFetch(`/admin/internships/leaves/${id}/review`, { method: "PATCH", body: JSON.stringify({ status }) }),
+  getHolidays: () => apiFetch("/admin/internships/holidays"),
+  addHoliday: (data) => apiFetch("/admin/internships/holidays", { method: "POST", body: JSON.stringify(data) }),
+  deleteHoliday: (id) => apiFetch(`/admin/internships/holidays/${id}`, { method: "DELETE" }),
+  getOfficeNetwork: () => apiFetch("/admin/internships/office-network"),
+  setOfficeNetwork: () => apiFetch("/admin/internships/office-network", { method: "POST" }),
+  unsetOfficeNetwork: () => apiFetch("/admin/internships/office-network", { method: "DELETE" }),
   saveInternReport: (data) =>
     apiFetch("/admin/internships/reports", { method: "POST", body: JSON.stringify(data) }),
   reviewInternReport: (id, data) =>
@@ -276,6 +299,11 @@ deleteTeamMember: (id) =>
     apiFetch("/admin/internships/tasks", { method: "POST", body: JSON.stringify(data) }),
   updateInternTask: (id, data) =>
     apiFetch(`/admin/internships/tasks/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+  getInternCertificateSettings: () => apiFetch("/admin/internships/certificate-settings"),
+  updateInternCertificateSettings: (data) => apiFetch("/admin/internships/certificate-settings", { method: "PUT", body: JSON.stringify(data) }),
+  getInternCertificates: () => apiFetch("/admin/internships/certificates"),
+  issueInternCertificate: (internId) => apiFetch(`/admin/internships/interns/${internId}/certificates`, { method: "POST" }),
+  revokeInternCertificate: (id, reason) => apiFetch(`/admin/internships/certificates/${id}/revoke`, { method: "PATCH", body: JSON.stringify({ reason }) }),
 };
 
 export function formatDate(dateStr) {
