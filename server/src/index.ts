@@ -165,7 +165,7 @@ app.get("*", async (req, res, next) => {
 // Error handler
 app.use(errorHandler);
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`
 ╔════════════════════════════════════════════════════╗
 ║     Dhanamitra Infotech — Express API Server       ║
@@ -174,6 +174,63 @@ app.listen(PORT, () => {
 ║     Uploads: ${uploadsPath}
 ╚════════════════════════════════════════════════════╝
   `);
+
+  console.log(
+    JSON.stringify({
+      event: "APPLICATION_START",
+      pid: process.pid,
+      ppid: process.ppid,
+      nodeVersion: process.version,
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString(),
+    })
+  );
 });
+
+// Diagnostics: makes it possible to see *when* and *why* a new lsnode
+// worker starts, without masking recoverable errors by exiting the process.
+function logProcessEvent(event: string, extra: Record<string, unknown> = {}) {
+  console.log(
+    JSON.stringify({
+      event,
+      pid: process.pid,
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString(),
+      ...extra,
+    })
+  );
+}
+
+process.on("uncaughtException", (err) => {
+  logProcessEvent("UNCAUGHT_EXCEPTION", { message: err.message, stack: err.stack });
+});
+
+process.on("unhandledRejection", (reason) => {
+  logProcessEvent("UNHANDLED_REJECTION", {
+    message: reason instanceof Error ? reason.message : String(reason),
+  });
+});
+
+let shuttingDown = false;
+function gracefulShutdown(signal: string) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  logProcessEvent("SHUTDOWN_SIGNAL", { signal });
+
+  server.close(() => {
+    logProcessEvent("SHUTDOWN_COMPLETE", { signal });
+    process.exit(0);
+  });
+
+  // Safety net: force-exit if connections don't drain in time (e.g. Passenger
+  // rolling restart waiting on this worker).
+  setTimeout(() => {
+    logProcessEvent("SHUTDOWN_FORCED", { signal });
+    process.exit(1);
+  }, 10000).unref();
+}
+
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 
 export default app;
